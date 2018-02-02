@@ -23,7 +23,5 @@ To check the npm's version:
 npm -v 
 ```
 Further information can be found on:
-https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/
-http://github.com - automatic!
-[GitHub](http://github.com)
+[Installing NodeJS on Ubuntu] (https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/)
 ### 2- Installing ExpressJS
