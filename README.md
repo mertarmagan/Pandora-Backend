@@ -14,14 +14,19 @@ To prepare the machine for installing NodeJS:
 sudo apt-get install python-software-properties
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 ```
+If 'curl' program is not installed on your machine, consider running this line:
+```bash
+sudo apt-get install curl
+```
 To install NodeJS:
 ```bash
 sudo apt-get install nodejs
 ```
-To check the npm's version:
+To check the npm's version:(which will guarantee that your installation is successful!)
 ```bash
 npm -v 
 ```
-Further information can be found on:
+Further information about installing NodeJS:
 [Installing NodeJS on Ubuntu](https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/)
+Further information about NodeJS: [NodeJS Official Website](https://nodejs.org/en/)
 ### 2- Installing ExpressJS
