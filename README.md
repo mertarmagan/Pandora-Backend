@@ -1,4 +1,4 @@
-# Pandora-Backend
+# The Pandora's Backend Development
 The repository for Pandora's backend side development. (Currently working with ExpressJS, NodeJS and a little bit of HTML and CSS)
 
 ## Getting Started
@@ -22,4 +22,8 @@ To check the npm's version:
 ```bash
 npm -v 
 ```
+Further information can be found on:
+https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/
+http://github.com - automatic!
+[GitHub](http://github.com)
 ### 2- Installing ExpressJS
