@@ -1,4 +1,4 @@
-# The Pandora's Backend Development
+# The Pandora's Backend Development :rocket:
 The repository for Pandora's backend side development. (Currently working with ExpressJS, NodeJS and a little bit of HTML and CSS)
 
 ## Getting Started
@@ -26,7 +26,8 @@ To check the npm's version:(which will guarantee that your installation is succe
 ```bash
 npm -v 
 ```
-Further information about installing NodeJS:
-[Installing NodeJS on Ubuntu](https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/)
+Further information about installing NodeJS: [Installing NodeJS on Ubuntu](https://tecadmin.net/install-latest-nodejs-npm-on-ubuntu/)
+
 Further information about NodeJS: [NodeJS Official Website](https://nodejs.org/en/)
+
 ### 2- Installing ExpressJS
