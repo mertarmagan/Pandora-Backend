@@ -6,7 +6,7 @@ First let's see some guides to build our dependencies and development platform:
 
 ## NodeJS & ExpressJS
 
-ExpressJS is a framework for working with NodeJS easily. This will handle our main server. However, we need to install NodeJS to work with ExpressJS.
+ExpressJS is a library for working with NodeJS easily. This will handle our main server. However, we need to install NodeJS to work with ExpressJS.
 
 ### 1- Installing NodeJS
 To prepare the machine for installing NodeJS:
