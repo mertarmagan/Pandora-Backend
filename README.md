@@ -9,14 +9,25 @@ First let's see some guides to build our dependencies and development platform:
 ExpressJS is a library for working with NodeJS easily. This will handle our main server. However, we need to install NodeJS to work with ExpressJS.
 
 ### 1- Installing NodeJS
-To prepare the machine for installing NodeJS:
+To prepare the Raspberry Pi machine for installing NodeJS:
 ```bash
-sudo apt-get install python-software-properties
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+cd ~
+wget https://nodejs.org/dist/v8.9.4/node-v8.9.4-linux-armv6l.tar.gz
+tar -xzf node-v8.9.4-linux-armv6l.tar.gz
+node-v8.9.4-linux-armv6l/bin/node -v
+sudo apt-get install python3-software-properties
+cd node-v8.9.4-linux-armv6l/
+sudo cp -R * /usr/local/
+export PATH=$PATH:/usr/local/bin
+node -v
+npm -v
 ```
+To work on Ubuntu:
 _If 'curl' program is not installed on your machine, consider running this line:_
 ```bash
 sudo apt-get install curl
+sudo apt-get install python-software-properties
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 ```
 To install NodeJS:
 ```bash
