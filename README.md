@@ -42,3 +42,12 @@ Further information about installing NodeJS: [Installing NodeJS on Ubuntu](https
 Further information about NodeJS: [NodeJS Official Website](https://nodejs.org/en/)
 
 ### 2- Installing ExpressJS
+-
+## Deployment on Google Cloud Server
+To run the NodeJS app continuously:
+```bash
+[sudo] npm install -g forever
+[sudo] npm install -g forever-service
+[sudo] forever-service install myservice --script main.js
+[sudo] service myservice start
+```
