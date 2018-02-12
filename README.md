@@ -48,6 +48,6 @@ To run the NodeJS app continuously:
 ```bash
 [sudo] npm install -g forever
 [sudo] npm install -g forever-service
-[sudo] forever-service install myservice --script main.js
+[sudo] forever-service install myservice --script server.js
 [sudo] service myservice start
 ```
