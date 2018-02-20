@@ -21,6 +21,12 @@ function listening() {
 	console.log("Listening on port: "+ PORT);
 }
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 // To publish html files from "public" file
 app.use(express.static("public"));
 // To track each GET/POST/.. commands on the server
@@ -298,8 +304,8 @@ function isGameRoomActive(req, res) {
 }
 
 // Make Player Ready
-app.post('/api/makePlayerReady', makePlayerReady);
-function makePlayerReady(req, res) {
+app.post('/api/setPlayerReady', setPlayerReady);
+function setPlayerReady(req, res) {
 	var reply;
 	var body = req.body;
 
@@ -321,7 +327,7 @@ function makePlayerReady(req, res) {
 		inputStatus = true;
 	else if(inputStatus === "false")
 		inputStatus = false;
-	
+
 	inputUsername = inputUsername.toUpperCase();
 
 	var data = fs.readFileSync('./game_rooms/rooms.json');
