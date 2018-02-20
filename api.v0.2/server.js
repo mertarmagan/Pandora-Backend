@@ -11,6 +11,7 @@ var express = require("express");
 var bodyParser = require("body-parser");
 var fs = require("fs");
 var logger = require('morgan');
+var cors = require('cors');
 
 var app = express();
 
@@ -20,15 +21,6 @@ var server = app.listen(PORT, listening);
 function listening() {
 	console.log("Listening on port: "+ PORT);
 }
-
-app.use(function(req, res, next) {
-  res.setHeader('X-Frame-Options', 'ALLOWALL');
-  res.setheader("Access-Control-Allow-Origin", "*");
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET');
-  res.setheader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
 // To publish html files from "public" file
 app.use(express.static("public"));
 // To track each GET/POST/.. commands on the server
@@ -36,6 +28,14 @@ app.use(logger('dev'));
 // Configuring body-parser library to be useful
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
+
+app.use(function(req, res, next) {
+   res.header("Access-Control-Allow-Origin", "*");
+   res.header('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST');
+   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+   next();
+});
 
 // Admin Login
 app.post('/api/loginAdmin', loginAdmin);
