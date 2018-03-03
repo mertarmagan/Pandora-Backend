@@ -13,10 +13,15 @@ var fs = require("fs");
 var logger = require('morgan');
 var cors = require('cors');
 
+
 var app = express();
 
 var PORT = 3000;
 var server = app.listen(PORT, listening);
+
+var wsConnection = require('./ConnectionHandler').ConnectionHandler();
+var GameRoomHandler = require('./game_rooms/GameRoomHandler').GameRoomHandler
+
 
 function listening() {
 	console.log("Listening on port: "+ PORT);
@@ -101,7 +106,7 @@ function getConnIdGuest(req, res) {
 	connectedUsers[guestID] = "Guest";
 	reply = {
 		connID: guestID
-	}
+	};
 	res.status(200).send(reply);
 }
 
@@ -161,7 +166,7 @@ function createRoom(req, res) {
 
 		reply = {
 			gameRoomID: roomData.gameRoomID
-		}
+		};
 		res.status(200).send(reply);
 	}
 }
@@ -196,6 +201,16 @@ function getActiveRooms(req, res) {
 		res.status(404).send(reply);
 	}
 }
+
+app.get('/api/getAllRooms' , function (request, response) {
+	var list = GameRoomHandler.roomList;
+	if(list.length > 0){
+		response.status(200).send(list);
+	}
+	else{
+		response.status(404).send();
+	}
+});
 
 app.post('/api/enterGameRoom', enterGameRoom);
 function enterGameRoom(req, res) {
