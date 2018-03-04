@@ -13,15 +13,14 @@ var fs = require("fs");
 var logger = require('morgan');
 var cors = require('cors');
 
-
 var app = express();
 
 var PORT = 3000;
 var server = app.listen(PORT, listening);
 
 var wsConnection = require('./ConnectionHandler').ConnectionHandler();
+var ErrorHandler = require('./ErrorHandler').ErrorHandler
 var GameRoomHandler = require('./game_rooms/GameRoomHandler').GameRoomHandler
-
 
 function listening() {
 	console.log("Listening on port: "+ PORT);
@@ -208,7 +207,10 @@ app.get('/api/getAllRooms' , function (request, response) {
 		response.status(200).send(list);
 	}
 	else{
-		response.status(404).send();
+		var reply = {
+			message: "No room exists!"
+		}
+		response.status(404).send(reply);
 	}
 });
 
@@ -397,10 +399,9 @@ function isAdmin(req, res) {
 	var adminID = 1;
 	var check;
 
-	if(body.connID === undefined){
-		reply = {
-			message: "Wrong input type!"
-		}
+	let error = ErrorHandler.checkInput(body.connID);
+	if(error){
+		reply = { message: "Wrong input type!" };
 		res.status(400).send(reply);
 		return;
 	}
@@ -417,4 +418,29 @@ function isAdmin(req, res) {
 		message: check
 	}
 	res.status(200).send(reply);
+}
+
+app.post('/api/setGameRoomActive', setGameRoomActive);
+function setGameRoomActive(req, res) {
+	var body = req.body;
+
+	let error = ErrorHandler.checkInput(body.gameRoomID, body.boolean);
+	if(error){
+		reply = { message: "Wrong input type!" };
+		res.status(400).send(reply);
+		return;
+	}
+
+	var inputGameRoomID = Number(body.gameRoomID);
+	var inputBool = body.boolean;
+	var reply;
+
+	var success = GameRoomHandler.setGameRoomActive(inputGameRoomID, inputBool);
+	if(success){
+		reply = { message: "Done!" };
+		res.status(200).send(reply);
+	} else {
+		reply = {	message: "GameRoomID does not found or connection error!"	};
+		res.status(404).send(reply);
+	}
 }

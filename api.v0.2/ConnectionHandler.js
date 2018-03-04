@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 module.exports ={
     "isLeavingSafe": false,
     "setLeavingSafe": function (boolean) {
@@ -21,12 +14,12 @@ module.exports ={
 
         });
 
-
         function htmlEntities(str) {
             return String(str)
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
+
         server.listen(webSocketServerPort, function () {
             console.log((new Date()) + " WSServer is listening on port "
                 + webSocketServerPort);
