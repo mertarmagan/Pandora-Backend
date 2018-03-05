@@ -2,7 +2,6 @@
 var connectedUsers = {}
 var guestID = 1;
 var adminExist = false;
-var gameRoomID = 0;
 
 console.log("Server is starting..");
 
@@ -21,6 +20,7 @@ var server = app.listen(PORT, listening);
 var wsConnection = require('./ConnectionHandler').ConnectionHandler();
 var ErrorHandler = require('./ErrorHandler').ErrorHandler
 var GameRoomHandler = require('./game_rooms/GameRoomHandler').GameRoomHandler
+var LoginHandler = require('./LoginHandler').LoginHandler
 
 function listening() {
 	console.log("Listening on port: "+ PORT);
@@ -45,61 +45,122 @@ app.use(function(req, res, next) {
 app.post('/api/loginAdmin', loginAdmin);
 function loginAdmin(req, res) {
 	var reply;
-	var password;
-
-	var data = fs.readFileSync("./admin/pass.json");
-	var passObject = JSON.parse(data);
-	var storedPass = passObject.password;
-
 	var body = req.body;
 
-	if(body.password === undefined){
-		reply = {
-			message: "Wrong input!"
-		}
+	let error = ErrorHandler.checkInput(body.password);
+	if(error){
+		reply = { message: "Wrong input type!" };
 		res.status(400).send(reply);
-	}	else {
-		var inputPass = body.password;
+		return;
+	}
 
-		if(!adminExist && inputPass === storedPass) {
-			adminExist = true;
-			reply = {
-				message: "Done(admin)!"
-			}
-			res.status(200).send(reply);
-		} else {
-			reply = {
-				message: "Invalid password or admin already exists!"
-			}
-			res.status(400).send(reply);
-		}
+	var inputPass = body.password;
+	let success = LoginHandler.loginAdmin(inputPass);
+
+	if(success) {
+		// adminExist = true;
+		reply = { message: "Done(admin)!" };
+		res.status(200).send(reply);
+	} else {
+		reply = { message: "Invalid password!" };
+		res.status(400).send(reply);
 	}
 }
 
 // Guest Login
 app.post('/api/loginGuest', loginGuest);
 function loginGuest(req, res) {
-	var reply = {
-		message: "Done(guest)!"
-	};
+	var reply = { message: "Done(guest)!" };
 	res.status(200).send(reply);
+}
+
+app.post('/api/setAdminPassword', setAdminPassword);
+function setAdminPassword(req, res) {
+	var reply;
+	var body = req.body;
+
+	let error = ErrorHandler.checkInput(body.newPassword);
+	if(error){
+		reply = { message: "Wrong input type!" };
+		res.status(400).send(reply);
+		return;
+	}
+
+	var inPassword = body.newPassword;
+
+	let success = LoginHandler.setAdminPassword(inPassword);
+	if(success){
+		reply = { message: "Done!" };
+		res.status(200).send(reply);
+	} else {
+		reply = { message: "Internal Server Error" };
+		res.status(500).send(reply);
+	}
+}
+
+app.post('/api/setWifiPassword', setWifiPassword);
+function setWifiPassword(req, res) {
+	var reply;
+	var body = req.body;
+
+	let error = ErrorHandler.checkInput(body.newPassword);
+	if(error){
+		reply = { message: "Wrong input type!" };
+		res.status(400).send(reply);
+		return;
+	}
+
+	var inPassword = body.newPassword;
+
+	let success = LoginHandler.setWifiPassword(inPassword);
+	if(success){
+		reply = { message: "Done!" };
+		res.status(200).send(reply);
+	} else {
+		reply = { message: "Internal Server Error" };
+		res.status(500).send(reply);
+	}
+}
+
+app.post('/api/setWifiName', setWifiName);
+function setWifiName(req, res) {
+	var reply;
+	var body = req.body;
+
+	let error = ErrorHandler.checkInput(body.newName);
+	if(error){
+		reply = { message: "Wrong input type!" };
+		res.status(400).send(reply);
+		return;
+	}
+
+	var inName = body.newName;
+
+	let success = LoginHandler.setWifiName(inName);
+	if(success){
+		reply = { message: "Done!" };
+		res.status(200).send(reply);
+	} else {
+		reply = { message: "Internal Server Error" };
+		res.status(500).send(reply);
+	}
 }
 
 // Get Connection ID for Admin
 app.get('/api/getConnIdAdmin', getConnIdAdmin);
 function getConnIdAdmin(req, res) {
+	// TODO: Need to move its logic to ConnectionHandler (w/ more configuration!)
 	var reply;
 	var adminID = 1;
 	connectedUsers[adminID] = "Admin";
-	reply = {
-		connID: adminID
-	}
+	reply = { connID: adminID };
 	res.status(200).send(reply);
 }
 
 // Get Connection ID for Guest
 app.get('/api/getConnIdGuest', getConnIdGuest);
 function getConnIdGuest(req, res) {
+	// TODO: Need to move its logic to ConnectionHandler (w/ more configuration!)
 	var reply;
 	guestID++;
 	connectedUsers[guestID] = "Guest";
@@ -112,61 +173,26 @@ function getConnIdGuest(req, res) {
 // Create Game Room
 app.post('/api/createRoom', createRoom);
 function createRoom(req, res) {
-	/*
-		roomsObj: rooms.json'daki bütün Object
-		roomList: rooms.json içindeki roomsList property'si
-		roomData: yeni eklenecek datanın objesi(roomList'e girecek)
-		size: rooms.json'daki global size
-		gameRoomID: roomsList'teki son objenin id'si + 1
-	*/
-	var reply;
-
 	var body = req.body;
-	// Checking the input
-	if(body.gameID === undefined){
-		reply = {
-			message: "Wrong input!"
-		}
+
+	let error = ErrorHandler.checkInput(body.gameID);
+	if(error){
+		reply = { message: "Wrong input type!" };
 		res.status(400).send(reply);
-	}	else {
-		gameRoomID++;
-		var roomData = {};
-		var inputGameID = Number(body.gameID);
+		return;
+	}
 
-		//console.log(JSON.stringify(roomData));
-		var data = fs.readFileSync('./game_rooms/rooms.json');
-		var roomsObj = JSON.parse(data);
-		var roomList = roomsObj.roomList;
-		var size = roomsObj.size;
-		size++;
+	var reply;
+	var inputGameID = Number(body.gameID);
 
-		//console.log(gameRoomID);
+	let result = GameRoomHandler.createRoom(inputGameID, {});
 
-		// Updating global size!
-		roomsObj.size = size;
-		roomData.gameID = inputGameID;
-
-		if(size > 1){
-			var newID = roomList[size-2].gameRoomID + 1;
-			roomData.gameRoomID = newID;
-		} else {
-			roomData.gameRoomID = size;
-		}
-
-		roomData.users = [];
-		roomData.active = false;
-
-		roomList.push(roomData);
-
-		fs.writeFileSync('./game_rooms/rooms.json', JSON.stringify(roomsObj, null, 2), finished);
-		function finished(err){
-			console.log("Data can't be written!");
-		}
-
-		reply = {
-			gameRoomID: roomData.gameRoomID
-		};
+	if(result['success']){
+		reply = { gameRoomID: result['gameRoomID'] };
 		res.status(200).send(reply);
+	} else {
+		reply = { message: "Internal Server Error!" }
+		res.status(500).send(reply);
 	}
 }
 
@@ -201,31 +227,30 @@ function getActiveRooms(req, res) {
 	}
 }
 
-app.get('/api/getAllRooms' , function (request, response) {
+app.get('/api/getAllRooms', getAllRooms);
+function getAllRooms(req, res) {
 	var list = GameRoomHandler.roomList;
 	if(list.length > 0){
 		response.status(200).send(list);
 	}
 	else{
-		var reply = {
-			message: "No room exists!"
-		}
-		response.status(404).send(reply);
+		var reply = {	message: "No room exists!" };
+		response.status(204).send(reply);
 	}
-});
+}
 
 app.post('/api/enterGameRoom', enterGameRoom);
 function enterGameRoom(req, res) {
 	var reply;
 	var body = req.body;
 
-	if(body.connID === undefined || body.username === undefined || body.gameRoomID === undefined){
-		reply = {
-			message: "Wrong input type!"
-		}
+	let error = ErrorHandler.checkInput(body.connID, body.username, body.gameRoomID);
+	if(error){
+		reply = { message: "Wrong input type!" };
 		res.status(400).send(reply);
 		return;
 	}
+
 	var inputConnID = Number(body.connID);
 	var inputUsername = String(body.username);
 	var inputGameRoomID = Number(body.gameRoomID);
@@ -244,9 +269,7 @@ function enterGameRoom(req, res) {
 			//console.log("AAA " + roomList[i].users.length);
 			for(var j=0; j<roomList[i].users.length; j++){
 				if(roomList[i].users[j].username === inputUsername){
-					reply = {
-						message: "User already exists!"
-					}
+					reply = { message: "User already exists!" }
 					res.status(406).send(reply);
 					return;
 				}
@@ -285,10 +308,9 @@ function isGameRoomActive(req, res) {
 	var reply;
 	var body = req.body;
 
-	if(body.gameRoomID === undefined){
-		reply = {
-			message: "Wrong input type!"
-		}
+	let error = ErrorHandler.checkInput(body.gameRoomID);
+	if(error){
+		reply = { message: "Wrong input type!" };
 		res.status(400).send(reply);
 		return;
 	}
@@ -310,14 +332,10 @@ function isGameRoomActive(req, res) {
 	}
 
 	if(found){
-		reply = {
-			message: status
-		}
+		reply = { message: status };
 		res.status(200).send(reply);
 	} else {
-		reply = {
-			message: "Game room does not exist!"
-		}
+		reply = { message: "Game room does not exist!" };
 		res.status(404).send(reply);
 	}
 }
@@ -328,11 +346,9 @@ function setPlayerReady(req, res) {
 	var reply;
 	var body = req.body;
 
-	if(body.connID === undefined || body.username === undefined ||
-					body.readyStatus === undefined || body.gameRoomID === undefined) {
-		reply = {
-			message: "Wrong input type!"
-		}
+	let error = ErrorHandler.checkInput(body.connID, body.username, body.gameRoomID, body.readyStatus);
+	if(error){
+		reply = { message: "Wrong input type!" };
 		res.status(400).send(reply);
 		return;
 	}
@@ -389,6 +405,32 @@ function setPlayerReady(req, res) {
 		}
 		res.status(404).send(reply);
 	}
+}
+
+app.post('/api/wasPlaying', wasPlaying);
+function wasPlaying(req, res) {
+	var reply;
+	var body = req.body;
+
+	let error = ErrorHandler.checkInput(body.connID);
+	if(error){
+		reply = { message: "Wrong input type!" };
+		res.status(400).send(reply);
+		return;
+	}
+
+	var inputConnID = Number(body.connID);
+
+	let result = GameRoomHandler.wasPlaying(inputConnID);
+
+	if(result["success"]){
+		reply = { message: result["boolean"] };
+		res.status(200).send(reply);
+	} else {
+		reply = { message: "Internal Server Error!" };
+		res.status(500).send(reply);
+	}
+
 }
 
 // Check if the user is Admin

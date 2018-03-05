@@ -8,6 +8,6 @@ module.exports['ErrorHandler'] = function () {
           }
           return false;
         }
-        
+
     }
 }();
