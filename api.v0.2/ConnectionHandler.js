@@ -9,6 +9,7 @@ module.exports ={
         var webSocketServerPort = 1337;
         var webSocketServer = require('websocket').server;
         var GameStateHandler = require('./game_state/GameStateHandler').GameStateHandler;
+        var GameRoomHandler = require('./game_rooms/GameRoomHandler').GameRoomHandler;
         var http = require('http');
         var server = http.createServer(function (request,response) {
 
@@ -38,13 +39,47 @@ module.exports ={
             connection.on('message' ,function (message) {
                 message = JSON.parse(message.utf8Data);
                 console.log(message);
-                if(message.type === "SAVE_STATE") {
+                if(message.type === "STATE_UPDATE") {
                     console.assert(message.state !== null);
                     console.assert(message.gameRoomID !== null);
                     var newState = GameStateHandler.updateGameState(message.gameRoomID , message.state);
-                    clients.forEach(function (connection) {
-                        connection.send(JSON.stringify({type: "STATE_UPDATED", gameRoomID: message.gameRoomID, state: newState}))
+                    clients.forEach(function (client) {
+                        if(connection !== client)
+                            client.send(JSON.stringify({type: "STATE_UPDATE", gameRoomID: newState.gameRoomID, state: newState}))
                     })
+                }
+                else if(message.type === "GET_INITIAL_STATE"){
+                    console.assert(message.gameRoomID !== null);
+                    ws.send(JSON.stringify({type: "STATE_UPDATE", state: GameStateHandler.getGameState(message.gameRoomID)}))
+
+                }else if(message.type === "ENTER_GAME_ROOM"){
+                    console.assert(message.gameRoomID !== null);
+                    var newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.user);
+                    clients.forEach(function (client) {
+                        client.send(JSON.stringify({type: "USER_JOINED" , gameRoomID: message.gameRoomID, room: newRoomState}))
+                    })
+                }else if(message.type === "EXIT_GAME_ROOM"){
+                    console.assert(message.gameRoomID !== null);
+                    var newRoomState = GameRoomHandler.deleteUserFromGameRoom(message.gameRoomID, message.username);
+                    clients.forEach(function (client) {
+                        client.send(JSON.stringify({type: "USER_EXIT" , gameRoomID: newRoomState.gameRoomID, room: newRoomState}))
+                    })
+                }
+                else if(message.type === "SET_READY_TRUE"){
+                    console.assert(message.gameRoomID !== null);
+                    console.assert(message.username !== null);
+                    var newRoomState = GameRoomHandler.setUserReady(message.gameRoomID , message.username, true);
+                    clients.forEach(function (client) {
+                        client.send(JSON.stringify({type: "USER_READY", room: newRoomState}))
+                    }, this)
+
+                }else if(message.type === "SET_READY_FALSE"){
+                    console.assert(message.gameRoomID !== null);
+                    console.assert(message.username !== null);
+                    var newRoomState = GameRoomHandler.setUserReady(message.gameRoomID , message.username, false);
+                    clients.forEach(function (client) {
+                        client.send(JSON.stringify({type: "USER_READY", room: newRoomState}))
+                    }, this)
                 }
                 else {
                     console.warn("Message did not recognized!")
