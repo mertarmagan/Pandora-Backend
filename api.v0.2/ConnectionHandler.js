@@ -14,7 +14,7 @@ module.exports ={
         var server = http.createServer(function (request,response) {
 
         });
-
+        var LoginHandler = require('./LoginHandler').LoginHandler;
         function htmlEntities(str) {
             return String(str)
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -39,20 +39,33 @@ module.exports ={
             connection.on('message' ,function (message) {
                 message = JSON.parse(message.utf8Data);
                 console.log(message);
-                if(message.type === "STATE_UPDATE") {
-                    console.assert(message.state !== null);
-                    console.assert(message.gameRoomID !== null);
-                    var newState = GameStateHandler.updateGameState(message.gameRoomID , message.state);
-                    clients.forEach(function (client) {
-                        if(connection !== client)
-                            client.send(JSON.stringify({type: "STATE_UPDATE", gameRoomID: newState.gameRoomID, state: newState}))
-                    })
-                }
-                else if(message.type === "GET_INITIAL_STATE"){
-                    console.assert(message.gameRoomID !== null);
-                    ws.send(JSON.stringify({type: "STATE_UPDATE", state: GameStateHandler.getGameState(message.gameRoomID)}))
+                if(message.type === "ADMIN_LOGIN"){
+                    console.assert(message.password !== null);
+                    var key = LoginHandler.loginAdmin(message.password);
+                    if(key)
+                        connection.send(JSON.stringify({type:"ADMIN_LOGIN" , key: key}));
+                    else
+                        connection.send(JSON.stringify({type:"ERROR", message: "Wrong Password"}))
 
-                }else if(message.type === "ENTER_GAME_ROOM"){
+                }
+                else if(message.type === "CREATE_GAME_ROOM") {
+                    console.assert(message.key !== null);
+                    console.assert(message.gameID !== null);
+                    if( LoginHandler.validateKey(message.key )){
+                        var roomObj = GameRoomHandler.createRoom(message.gameID);
+                        connection.send(JSON.stringify({type:"CREATE_GAME_ROOM" , gameRoom: roomObj}))
+                    }else {
+                        connection.send(JSON.stringify({type:"ERROR", message:"Game Room couldn't created"}))
+                    }
+                }
+                else if(message.type === "GET_ACTIVE_GAME_ROOM") {
+                    let rooms = GameRoomHandler.getActiveRooms();
+                    connection.send(JSON.stringify({type: "GET_ACTIVE_GAME_ROOM", roomList: rooms}));
+                }else if(message.type === "GET_ALL_ROOMS") {
+                    let rooms = GameRoomHandler.roomList;
+                    connection.send(JSON.stringify({type: "GET_ALL_ROOMS", roomList: rooms}))
+                }
+                else if(message.type === "ENTER_GAME_ROOM"){
                     console.assert(message.gameRoomID !== null);
                     var newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.user);
                     clients.forEach(function (client) {
@@ -80,6 +93,19 @@ module.exports ={
                     clients.forEach(function (client) {
                         client.send(JSON.stringify({type: "USER_READY", room: newRoomState}))
                     }, this)
+                }
+                else if(message.type === "GET_INITIAL_STATE"){
+                    console.assert(message.gameRoomID !== null);
+                    ws.send(JSON.stringify({type: "STATE_UPDATE", state: GameStateHandler.getGameState(message.gameRoomID)}))
+
+                }else if(message.type === "STATE_UPDATE") {
+                    console.assert(message.state !== null);
+                    console.assert(message.gameRoomID !== null);
+                    var newState = GameStateHandler.updateGameState(message.gameRoomID , message.state);
+                    clients.forEach(function (client) {
+                        if(connection !== client)
+                            client.send(JSON.stringify({type: "STATE_UPDATE", gameRoomID: newState.gameRoomID, state: newState}))
+                    })
                 }
                 else {
                     console.warn("Message did not recognized!")
