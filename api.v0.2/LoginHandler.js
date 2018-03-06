@@ -1,8 +1,11 @@
 var fs = require('fs');
+const uuidv1 = require('uuid/v1');
 
 module.exports['LoginHandler'] = function () {
     // var roomData = fs.readFileSync('./game_rooms/rooms.json');
     // var Rooms = JSON.parse(roomData);
+    var adminUID = null;
+
     var passData = fs.readFileSync('./admin/pass.json');
     var password = JSON.parse(passData);
 
@@ -11,6 +14,10 @@ module.exports['LoginHandler'] = function () {
 
     var wifiNameData = fs.readFileSync('./admin/wifiName.json');
     var wifiName = JSON.parse(wifiNameData);
+
+    function generateUID(){
+        return uuidv1();
+    }
 
     function synchronize(type){
         if(type === "adminPass")
@@ -26,12 +33,14 @@ module.exports['LoginHandler'] = function () {
         "password": password,
         "wifiName": wifiName,
         "wifiPass": wifiPass,
+        "validateKey": function (key) {
+            return key === adminUID;
+        },
         "loginAdmin": function (pass) {
             if(pass === password)
-                return true;
-            else
-                return false;
-        }
+                adminUID = generateUID();
+            return adminUID;
+        },
         "setAdminPassword": function (newPass) {
             password = newPass;
             synchronize("adminPass");
