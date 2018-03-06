@@ -7,7 +7,7 @@ module.exports['LoginHandler'] = function () {
     var adminUID = null;
 
     var passData = fs.readFileSync('./admin/pass.json');
-    var password = JSON.parse(passData);
+    var password = JSON.parse(passData).password;
 
     var wifiPassData = fs.readFileSync('./admin/wifiPass.json');
     var wifiPass = JSON.parse(wifiPassData);

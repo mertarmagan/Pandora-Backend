@@ -46,16 +46,32 @@ module.exports ={
                         connection.send(JSON.stringify({type:"ADMIN_LOGIN" , key: key}));
                     else
                         connection.send(JSON.stringify({type:"ERROR", message: "Wrong Password"}))
-
                 }
                 else if(message.type === "CREATE_GAME_ROOM") {
                     console.assert(message.key !== null);
                     console.assert(message.gameID !== null);
                     if( LoginHandler.validateKey(message.key )){
                         var roomObj = GameRoomHandler.createRoom(message.gameID);
-                        connection.send(JSON.stringify({type:"CREATE_GAME_ROOM" , gameRoom: roomObj}))
+                        connection.send(JSON.stringify({type:"CREATE_GAME_ROOM" , gameRoom: roomObj['gameRoom']}))
                     }else {
                         connection.send(JSON.stringify({type:"ERROR", message:"Game Room couldn't created"}))
+                    }
+                }else if(message.type === "DELETE_GAME_ROOM") {
+                    console.assert(message.key !== null);
+                    console.assert(message.gameRoomID !== null);
+                    if ( LoginHandler.validateKey(message.key)){
+                        let roomList = GameRoomHandler.deleteRoom(message.gameRoomID);
+                        connection.send(JSON.stringify({type:"DELETE_GAME_ROOM", roomList: roomList}))
+                    }else {
+                        connection.send(JSON.stringify({type:"ERROR", message:"Admin key not valid!"}))
+                    }
+                }else if(message.type === "DELETE_ALL_ROOMS") {
+                    console.assert(message.key !== null);
+                    if ( LoginHandler.validateKey(message.key)){
+                        let roomList = GameRoomHandler.deleteAllRooms();
+                        connection.send(JSON.stringify({type:"DELETE_GAME_ROOM" , roomList: roomList}))
+                    }else {
+                        connection.send(JSON.stringify({type:"ERROR", message: "Couldn't delete all rooms"}))
                     }
                 }
                 else if(message.type === "GET_ACTIVE_GAME_ROOM") {

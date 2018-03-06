@@ -3,6 +3,7 @@ var fs = require('fs');
 module.exports['GameRoomHandler'] = function () {
     var roomData = fs.readFileSync('./game_rooms/rooms.json');
     var Rooms = JSON.parse(roomData);
+    var LoginHandler = require("./../LoginHandler").LoginHandler;
 
     function synchronize(){
         fs.writeFileSync('./game_rooms/rooms.json', JSON.stringify(Rooms, null, 2));
@@ -11,7 +12,8 @@ module.exports['GameRoomHandler'] = function () {
     return {
         "roomList": Rooms.roomList,
         "size": Rooms.size,
-        "createRoom": function (gameID, UIDkey, roomObj) {
+        "createRoom": function (gameID, UIDkey) {
+            let roomObj = {};
             let gameRoomID;
             if(LoginHandler.validateKey(UIDkey))
                 return { gameRoom: {}};
@@ -31,11 +33,19 @@ module.exports['GameRoomHandler'] = function () {
             synchronize();
             return { gameRoom: roomObj };
         },
-        "deleteRoom": function (roomObj) {
-            roomObj['gameRoomID'] = Rooms.size; // TODO Is there a better solution to id?
-            Rooms.roomList[Rooms.size] = roomObj;
-            Rooms.size = Rooms.size + 1;
+        "deleteRoom": function (gameRoomID) {
+            Rooms.roomList = Rooms.roomList.filter(function (room) {
+               return room.gameRoomID !== gameRoomID
+            });
+            Rooms.size -= 1;
             synchronize();
+            return Rooms.roomList;
+        },
+        "deleteAllRooms": function () {
+            Rooms.roomList = [];
+            Rooms.size = 0;
+            synchronize();
+            return Rooms.roomList;
         },
         "addUserToGameRoom": function (gameRoomID , username) {
             let thisRoom = {};
@@ -49,15 +59,17 @@ module.exports['GameRoomHandler'] = function () {
             return thisRoom;
         },
         "deleteUserFromGameRoom": function(gameRoomID, username){
+            let thisRoom = {};
             Rooms.roomList.forEach(function (room) {
-                if(room.gameRoomID === gameRoomID)
-                    room.users.map(function (user) {
-                        if(user.username !== username){
-                            return user;
-                        }
-                    })
-            });
+                if(room['gameRoomID'] === gameRoomID){
+                    room.users = room.users.filter(function (user) {
+                        return user.username !== username
+                    });
+                    thisRoom = room;
+                }
+            }, thisRoom);
             synchronize();
+            return thisRoom;
         },
         "isGameRoomActive": function (gameRoomID) {
             for(var i=0; i<size; i++){
@@ -77,8 +89,9 @@ module.exports['GameRoomHandler'] = function () {
             synchronize();
             return success;
         },
-        "setUserReady": function (username, ready, gameRoomID) {
-            for(var i=0; i<size; i++){
+        "setUserReady": function (gameRoomID, username, ready) {
+            let thisRoom = {};
+            for(var i=0; i<this.size; i++){
         		if(Rooms.roomList[i].gameRoomID === gameRoomID){
         			for(var j=0; j<Rooms.roomList[i].users.length; j++){
         				if(Rooms.roomList[i].users[j].username === username) {
@@ -86,11 +99,12 @@ module.exports['GameRoomHandler'] = function () {
         					break;
         				}
         			}
+        			thisRoom = Rooms.roomList[i];
         			break;
         		}
         	}
             synchronize();
-            return true;
+            return thisRoom;
         },
         "getActiveRooms": function () {
             let activeGameRooms = [];

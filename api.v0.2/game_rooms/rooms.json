@@ -1,33 +1,4 @@
 {
-  "roomList": [
-    {
-      "gameID": 1,
-      "gameRoomID": 1,
-      "users": [],
-      "active": "false"
-    },
-    {
-      "gameID": 1,
-      "gameRoomID": 2,
-      "users": [
-        {
-          "connID": 4,
-          "username": "BERFU",
-          "ready": false
-        },
-        {
-          "connID": 4,
-          "username": "ARMO",
-          "ready": true
-        },
-        {
-          "connID": 4,
-          "username": "AHMET",
-          "ready": false
-        }
-      ],
-      "active": "true"
-    }
-  ],
-  "size": 2
+  "roomList": [],
+  "size": 0
 }
