@@ -39,6 +39,9 @@ module.exports['LoginHandler'] = function () {
         "loginAdmin": function (pass) {
             if(pass === password)
                 adminUID = generateUID();
+            else
+                adminUID = null;
+
             return adminUID;
         },
         "setAdminPassword": function (newPass) {
@@ -49,11 +52,13 @@ module.exports['LoginHandler'] = function () {
         "setWifiPassword": function (newPass) {
             wifiPass = newPass;
             synchronize("wifiPass");
+            // TODO: Stop the running server and change the password in system files of RPi, then restart the Access Point!
             return true;
         },
         "setWifiName": function (newName) {
             wifiName = newName;
             synchronize("wifiName");
+            // TODO: Stop the running server and change the name in system files of RPi, then restart the Access Point!
             return true;
         }
 

@@ -5,6 +5,9 @@ module.exports['GameRoomHandler'] = function () {
     var Rooms = JSON.parse(roomData);
     var LoginHandler = require("./../LoginHandler").LoginHandler;
 
+    var roomList = Rooms.roomList;
+    var size     = Rooms.roomList.length;
+
     function synchronize(){
         fs.writeFileSync('./game_rooms/rooms.json', JSON.stringify(Rooms, null, 2));
     }
@@ -12,11 +15,9 @@ module.exports['GameRoomHandler'] = function () {
     return {
         "roomList": Rooms.roomList,
         "size": Rooms.size,
-        "createRoom": function (gameID, UIDkey) {
+        "createRoom": function (gameID) {
             let roomObj = {};
             let gameRoomID;
-            if(LoginHandler.validateKey(UIDkey))
-                return { gameRoom: {}};
 
             if(Rooms.size >= 1)
               gameRoomID = Rooms.roomList[Rooms.size-1].gameRoomID + 1;
@@ -26,10 +27,11 @@ module.exports['GameRoomHandler'] = function () {
             // TODO Is there a better solution to id?
             roomObj['gameRoomID'] = gameRoomID;
             roomObj['users']      = [];
-            roomObj['active']     =  false;
+            roomObj['active']     = false;
             roomObj['status']     = "init";
+
             Rooms.roomList.push(roomObj);
-            Rooms.size = Rooms.size + 1;
+            Rooms.size += 1;
             synchronize();
             return { gameRoom: roomObj };
         },
@@ -73,7 +75,7 @@ module.exports['GameRoomHandler'] = function () {
         },
         "isGameRoomActive": function (gameRoomID) {
             for(var i=0; i<size; i++){
-        		if(roomList[i].gameRoomID === gameRoomID){
+        		if(Rooms.roomList[i].gameRoomID === gameRoomID){
         			return roomList[i].active;
         		}
         	}
