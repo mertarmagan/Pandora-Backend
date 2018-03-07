@@ -122,6 +122,11 @@ module.exports ={
                         if(connection !== client)
                             client.send(JSON.stringify({type: "STATE_UPDATE", gameRoomID: newState.gameRoomID, state: newState}))
                     })
+                }else if(message.type === "ENTER_GAME") {
+                    console.assert(message.gameRoomID !== null);
+                    var newState = GameStateHandler.getGameState(message.gameRoomID);
+                    if(newState)
+                        connection.send(JSON.stringify({type:"STATE_UPDATE", gameRoomID: newState.gameRoomID , state: newState}))
                 }
                 else {
                     console.warn("Message did not recognized!")
