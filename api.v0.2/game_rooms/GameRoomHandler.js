@@ -1,37 +1,35 @@
 var fs = require('fs');
+const uuidv4 = require('uuid/v4');
 
 module.exports['GameRoomHandler'] = function () {
-    var roomData = fs.readFileSync('./game_rooms/rooms.json');
-    var Rooms = JSON.parse(roomData);
-    var LoginHandler = require("./../LoginHandler").LoginHandler;
+    let roomData = fs.readFileSync('./game_rooms/rooms.json');
+    let Rooms = JSON.parse(roomData);
+    // let LoginHandler = require("./../LoginHandler").LoginHandler;
+    let roomList = Rooms.roomList;
+    let size     = Rooms.roomList.length;
 
     function synchronize(){
         fs.writeFileSync('./game_rooms/rooms.json', JSON.stringify(Rooms, null, 2));
     }
 
-    return {
-        "roomList": Rooms.roomList,
-        "size": Rooms.size,
-        "createRoom": function (gameID, UIDkey) {
-            let roomObj = {};
-            let gameRoomID;
-            if(LoginHandler.validateKey(UIDkey))
-                return { gameRoom: {}};
+    function generateGRID() {
+        return uuidv4();
+    }
 
-            if(Rooms.size >= 1)
-              gameRoomID = Rooms.roomList[Rooms.size-1].gameRoomID + 1;
-            else
-              gameRoomID = 1;
+    return {
+        "createRoom": function (gameID) {
+            let roomObj = {};
+
             roomObj['gameID']     = gameID;
-            // TODO Is there a better solution to id?
-            roomObj['gameRoomID'] = gameRoomID;
+            roomObj['gameRoomID'] = generateGRID();
             roomObj['users']      = [];
-            roomObj['active']     =  false;
+            roomObj['active']     = false;
             roomObj['status']     = "init";
+
             Rooms.roomList.push(roomObj);
-            Rooms.size = Rooms.size + 1;
+            Rooms.size += 1;
             synchronize();
-            return { gameRoom: roomObj };
+            return roomObj;
         },
         "deleteRoom": function (gameRoomID) {
             Rooms.roomList = Rooms.roomList.filter(function (room) {
@@ -47,12 +45,31 @@ module.exports['GameRoomHandler'] = function () {
             synchronize();
             return Rooms.roomList;
         },
+        "duplicateUser": function (username, gameRoomID) {
+            for(let i=0; i<Rooms.size; i++){
+                if(roomList[i].gameRoomID === gameRoomID){
+                    for(let j=0; j<roomList[i].users.length; j++){
+                        if(roomList[i].users[j].username === username.toUpperCase()) {
+                            return true;
+                        }
+                    }
+                    break;
+                }
+            }
+            return false;
+        },
         "addUserToGameRoom": function (gameRoomID , username) {
             let thisRoom = {};
+            let isExist = this.duplicateUser(username, gameRoomID);
             Rooms.roomList.forEach(function (room) {
                 if(room['gameRoomID'] === gameRoomID){
-                    thisRoom = room;
-                    room.users.push({ username: username, ready: false });
+                    if(!isExist){
+                        thisRoom = room;
+                        room.users.push({ username: username.toUpperCase(), ready: false });
+                    } else {
+                        this.
+                        thisRoom = null;
+                    }
                 }
             }, thisRoom);
             synchronize();
@@ -63,7 +80,7 @@ module.exports['GameRoomHandler'] = function () {
             Rooms.roomList.forEach(function (room) {
                 if(room['gameRoomID'] === gameRoomID){
                     room.users = room.users.filter(function (user) {
-                        return user.username !== username
+                        return user.username !== username.toUpperCase()
                     });
                     thisRoom = room;
                 }
@@ -72,8 +89,8 @@ module.exports['GameRoomHandler'] = function () {
             return thisRoom;
         },
         "isGameRoomActive": function (gameRoomID) {
-            for(var i=0; i<size; i++){
-        		if(roomList[i].gameRoomID === gameRoomID){
+            for(let i=0; i<size; i++){
+        		if(Rooms.roomList[i].gameRoomID === gameRoomID){
         			return roomList[i].active;
         		}
         	}
@@ -91,10 +108,10 @@ module.exports['GameRoomHandler'] = function () {
         },
         "setUserReady": function (gameRoomID, username, ready) {
             let thisRoom = {};
-            for(var i=0; i<this.size; i++){
+            for(let i=0; i<Rooms.roomList.length; i++){
         		if(Rooms.roomList[i].gameRoomID === gameRoomID){
-        			for(var j=0; j<Rooms.roomList[i].users.length; j++){
-        				if(Rooms.roomList[i].users[j].username === username) {
+        			for(let j=0; j<Rooms.roomList[i].users.length; j++){
+        				if(Rooms.roomList[i].users[j].username === username.toUpperCase()) {
         					Rooms.roomList[i].users[j].ready = ready;
         					break;
         				}
@@ -108,18 +125,18 @@ module.exports['GameRoomHandler'] = function () {
         },
         "getActiveRooms": function () {
             let activeGameRooms = [];
-            for(var i=0; i<Rooms.size; i++)
+            for(let i=0; i<Rooms.size; i++)
         		if(Rooms.roomList[i].active === true)
-                   activeGameRooms.push();
-            return { "activeGameRooms": activeGameRooms };
+                   activeGameRooms.push(Rooms.roomList[i]);
+            return activeGameRooms;
         },
         "getAllRooms": function () {
             return Rooms.roomList;
         },
         "wasPlaying": function (username) {
-            for(var i=0; i<Rooms.size; i++)
-                for(var j=0; j<Rooms.roomList[i].users.length; j++)
-                    if(Rooms.roomList[i].users[j].username === username)
+            for(let i=0; i<Rooms.size; i++)
+                for(let j=0; j<Rooms.roomList[i].users.length; j++)
+                    if(Rooms.roomList[i].users[j].username === username.toUpperCase())
                         return true;
             return false;
         }
