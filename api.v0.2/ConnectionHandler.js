@@ -40,19 +40,19 @@ module.exports ={
                 message = JSON.parse(message.utf8Data);
                 console.log(message);
                 if(message.type === "ADMIN_LOGIN"){
+                    // TODO: Try using ErrorHandler.assert(message.password);
                     console.assert(message.password !== null);
                     let key = LoginHandler.loginAdmin(message.password);
                     if(key !== null)
                         connection.send(JSON.stringify({type:"ADMIN_LOGIN" , key: key}));
                     else
-                        connection.send(JSON.stringify({type:"ERROR", message: "Wrong Password"}))
-                }
-                else if(message.type === "CREATE_GAME_ROOM") {
+                        connection.send(JSON.stringify({type:"ERROR", message: "Wrong Password"}));
+                }else if(message.type === "CREATE_GAME_ROOM") {
                     console.assert(message.key !== null);
                     console.assert(message.gameID !== null);
                     if( LoginHandler.validateKey(message.key )){
                         let roomObj = GameRoomHandler.createRoom(message.gameID);
-                        connection.send(JSON.stringify({type:"CREATE_GAME_ROOM" , gameRoom: roomObj['gameRoom']}))
+                        connection.send(JSON.stringify({type:"CREATE_GAME_ROOM" , gameRoom: roomObj}))
                     }else {
                         connection.send(JSON.stringify({type:"ERROR", message:"Game Room couldn't created"}))
                     }
@@ -69,39 +69,37 @@ module.exports ={
                     console.assert(message.key !== null);
                     if ( LoginHandler.validateKey(message.key)){
                         let roomList = GameRoomHandler.deleteAllRooms();
-                        connection.send(JSON.stringify({type:"DELETE_GAME_ROOM" , roomList: roomList}))
+                        connection.send(JSON.stringify({type:"DELETE_ALL_ROOMS" , roomList: roomList}))
                     }else {
                         connection.send(JSON.stringify({type:"ERROR", message: "Couldn't delete all rooms"}))
                     }
-                }
-                else if(message.type === "GET_ACTIVE_GAME_ROOM") {
+                }else if(message.type === "GET_ACTIVE_GAME_ROOM") {
                     let rooms = GameRoomHandler.getActiveRooms();
                     connection.send(JSON.stringify({type: "GET_ACTIVE_GAME_ROOM", roomList: rooms}));
                 }else if(message.type === "GET_ALL_ROOMS") {
-                    let rooms = GameRoomHandler.roomList;
+                    let rooms = GameRoomHandler.getAllRooms();
                     connection.send(JSON.stringify({type: "GET_ALL_ROOMS", roomList: rooms}))
-                }
-                else if(message.type === "ENTER_GAME_ROOM"){
+                }else if(message.type === "ENTER_GAME_ROOM"){
                     console.assert(message.gameRoomID !== null);
+                    console.assert(message.username !== null);
                     let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username);
                     clients.forEach(function (client) {
-                        client.send(JSON.stringify({type: "USER_JOINED" , gameRoomID: message.gameRoomID, room: newRoomState}))
+                        client.send(JSON.stringify({type: "USER_JOINED" , room: newRoomState}))
                     })
                 }else if(message.type === "EXIT_GAME_ROOM"){
                     console.assert(message.gameRoomID !== null);
+                    console.assert(message.username !== null);
                     let newRoomState = GameRoomHandler.deleteUserFromGameRoom(message.gameRoomID, message.username);
                     clients.forEach(function (client) {
                         client.send(JSON.stringify({type: "USER_EXIT" , gameRoomID: newRoomState.gameRoomID, room: newRoomState}))
                     })
-                }
-                else if(message.type === "SET_READY_TRUE"){
+                }else if(message.type === "SET_READY_TRUE"){
                     console.assert(message.gameRoomID !== null);
                     console.assert(message.username !== null);
                     let newRoomState = GameRoomHandler.setUserReady(message.gameRoomID , message.username, true);
                     clients.forEach(function (client) {
                         client.send(JSON.stringify({type: "USER_READY", room: newRoomState}))
                     }, this)
-
                 }else if(message.type === "SET_READY_FALSE"){
                     console.assert(message.gameRoomID !== null);
                     console.assert(message.username !== null);
@@ -109,8 +107,7 @@ module.exports ={
                     clients.forEach(function (client) {
                         client.send(JSON.stringify({type: "USER_READY", room: newRoomState}))
                     }, this)
-                }
-                else if(message.type === "GET_INITIAL_STATE"){
+                }else if(message.type === "GET_INITIAL_STATE"){
                     console.assert(message.gameRoomID !== null);
                     ws.send(JSON.stringify({type: "STATE_UPDATE", state: GameStateHandler.getGameState(message.gameRoomID)}))
 

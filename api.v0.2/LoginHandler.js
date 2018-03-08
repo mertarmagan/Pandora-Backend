@@ -4,16 +4,16 @@ const uuidv1 = require('uuid/v1');
 module.exports['LoginHandler'] = function () {
     // var roomData = fs.readFileSync('./game_rooms/rooms.json');
     // var Rooms = JSON.parse(roomData);
-    var adminUID = null;
+    let adminUID = null;
 
-    var passData = fs.readFileSync('./admin/pass.json');
-    var password = JSON.parse(passData).password;
+    let passData = fs.readFileSync('./admin/pass.json');
+    let password = JSON.parse(passData).password;
 
-    var wifiPassData = fs.readFileSync('./admin/wifiPass.json');
-    var wifiPass = JSON.parse(wifiPassData);
+    let wifiPassData = fs.readFileSync('./admin/wifiPass.json');
+    let wifiPass = JSON.parse(wifiPassData);
 
-    var wifiNameData = fs.readFileSync('./admin/wifiName.json');
-    var wifiName = JSON.parse(wifiNameData);
+    let wifiNameData = fs.readFileSync('./admin/wifiName.json');
+    let wifiName = JSON.parse(wifiNameData);
 
     function generateUID(){
         return uuidv1();
@@ -30,9 +30,6 @@ module.exports['LoginHandler'] = function () {
     }
 
     return {
-        "password": password,
-        "wifiName": wifiName,
-        "wifiPass": wifiPass,
         "validateKey": function (key) {
             return key === adminUID;
         },
@@ -52,14 +49,19 @@ module.exports['LoginHandler'] = function () {
         "setWifiPassword": function (newPass) {
             wifiPass = newPass;
             synchronize("wifiPass");
-            // TODO: Stop the running server and change the password in system files of RPi, then restart the Access Point!
+            // TODO: Run shell script
             return true;
         },
         "setWifiName": function (newName) {
             wifiName = newName;
             synchronize("wifiName");
-            // TODO: Stop the running server and change the name in system files of RPi, then restart the Access Point!
+            // TODO: Run shell script
             return true;
+        },
+        "resetAdminUID": function () {
+            // Storing adminUID as null in the process
+            adminUID = null;
+            return adminUID;
         }
 
 
