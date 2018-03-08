@@ -1,4 +1,127 @@
 {
-  "roomList": [],
-  "size": 0
+  "roomList": [
+    {
+      "gameID": 1,
+      "gameRoomID": "f287abfd-8ede-4d9e-882b-54ba3338ee8d",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": 1,
+      "gameRoomID": "47d304e2-cf74-418f-bd48-60727c2412a1",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": 1,
+      "gameRoomID": "a2389c84-2fb0-427c-b953-1a0cd4304a3c",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "c617fcd9-edb3-486e-b2bf-0c610b78275c",
+      "gameRoomID": "47951c90-eed4-4436-beaa-62cb9d8e4342",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "c617fcd9-edb3-486e-b2bf-0c610b78275c",
+      "gameRoomID": "788e3249-e62f-4a11-a1eb-25f9c86db28c",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "b473c749-ff3b-4c4f-ba1f-a22485554ba1",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "62b41fcb-6a30-4740-9914-c27082af883a",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "a6b8e5ac-d92d-446a-8f96-95b21abeb8ba",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "da642d5f-f307-410e-a4da-2362f39c1ad6",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "f89ab53c-d313-4fad-8dca-1cf2bb3f0ac7",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "da569991-6a69-44b5-9823-2370229e72e4",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "c2b8127d-7db4-4c7b-85f2-55564dcf03fa",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "46abcd44-cac6-497f-a685-cc8115c60155",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "c617fcd9-edb3-486e-b2bf-0c610b78275c",
+      "gameRoomID": "43225231-d4bf-44e9-bd7f-bf10b8bcd92d",
+      "users": [],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
+      "gameRoomID": "58b8a299-6d05-4374-a9cd-1375de629062",
+      "users": [
+        {
+          "username": "EGE",
+          "ready": false
+        }
+      ],
+      "active": false,
+      "status": "init"
+    },
+    {
+      "gameID": "c617fcd9-edb3-486e-b2bf-0c610b78275c",
+      "gameRoomID": "472dae79-4b4a-4883-a75c-0c5b2b86504c",
+      "users": [
+        {
+          "username": "EGEGE",
+          "ready": false
+        }
+      ],
+      "active": false,
+      "status": "init"
+    }
+  ],
+  "size": 16
 }

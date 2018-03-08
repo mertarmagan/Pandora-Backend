@@ -34,12 +34,13 @@ module.exports['LoginHandler'] = function () {
             return key === adminUID;
         },
         "loginAdmin": function (pass) {
-            if(pass === password)
+            if(pass == password) {
                 adminUID = generateUID();
+                return adminUID
+            }
             else
-                adminUID = null;
+                return null;
 
-            return adminUID;
         },
         "setAdminPassword": function (newPass) {
             password = newPass;

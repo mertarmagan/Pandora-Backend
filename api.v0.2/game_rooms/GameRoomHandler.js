@@ -64,10 +64,10 @@ module.exports['GameRoomHandler'] = function () {
             Rooms.roomList.forEach(function (room) {
                 if(room['gameRoomID'] === gameRoomID){
                     if(!isExist){
-                        thisRoom = room;
+                        console.log("user added");
                         room.users.push({ username: username.toUpperCase(), ready: false });
+                        thisRoom = room;
                     } else {
-                        this.
                         thisRoom = null;
                     }
                 }
