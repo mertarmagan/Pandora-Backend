@@ -85,8 +85,10 @@ module.exports ={
                     console.log("join game request: ", message);
                     let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username);
                     clients.forEach(function (client) {
-                        client.send(JSON.stringify({type: "USER_JOINED" , room: newRoomState}))
-                    })
+                        if(client !== connection)
+                            client.send(JSON.stringify({type: "USER_JOINED" , room: newRoomState}))
+                    });
+                    connection.send(JSON.stringify({type: "ENTER_GAME_ROOM" , room: newRoomState}));
                 }else if(message.type === "EXIT_GAME_ROOM"){
                     console.assert(message.gameRoomID !== null);
                     console.assert(message.username !== null);
