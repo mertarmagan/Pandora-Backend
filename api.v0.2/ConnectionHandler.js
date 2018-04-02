@@ -3,8 +3,6 @@ module.exports = {
   "setLeavingSafe": function(boolean) {
     this.isLeavingSafe = boolean;
   },
-  "connectionLost": null,
-  "newConnection": null,
   "ConnectionHandler": function() {
     var webSocketServerPort = 1337;
     var webSocketServer = require('websocket').server;
@@ -16,11 +14,7 @@ module.exports = {
     });
     var LoginHandler = require('./LoginHandler').LoginHandler;
 
-    function htmlEntities(str) {
-      return String(str)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+
 
     server.listen(webSocketServerPort, function() {
       console.log((new Date()) + " WSServer is listening on port " +
@@ -37,11 +31,12 @@ module.exports = {
       console.log((new Date()) + ' Connection from origin ' +
         ws.origin + '.');
       var connection = ws.accept();
+
+
       connection.on('message', function(message) {
         message = JSON.parse(message.utf8Data);
         console.log(message);
         if (message.type === "ADMIN_LOGIN") {
-          // TODO: Try using ErrorHandler.assert(message.password);
           console.assert(message.password !== null);
           let key = LoginHandler.loginAdmin(message.password);
           if (key !== null)
@@ -62,7 +57,14 @@ module.exports = {
             connection.send(JSON.stringify({
               type: "CREATE_GAME_ROOM",
               gameRoom: roomObj
-            }))
+            }));
+              clients.forEach(function (client) {
+                if(client !== connection)
+                  client.send(JSON.stringify({
+                      type: "ROOM_CREATED",
+                      gameRoom: roomObj
+                  }))
+              })
           } else {
             connection.send(JSON.stringify({
               type: "ERROR",
@@ -114,7 +116,8 @@ module.exports = {
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
           console.log("join game request: ", message);
-          let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username);
+          let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username , connection);
+          console.log(clients.length);
           clients.forEach(function(client) {
             if (client !== connection)
               client.send(JSON.stringify({
@@ -126,6 +129,12 @@ module.exports = {
             type: "ENTER_GAME_ROOM",
             room: newRoomState
           }));
+          /*
+          clients = clients.filter(function (client) {
+              return client !== connection
+          });
+          connection.close();
+          */
         } else if (message.type === "START_GAME") {
           console.log("Start game request!");
           console.assert(message.gameRoomID !== null);
@@ -145,14 +154,27 @@ module.exports = {
         } else if (message.type === "EXIT_GAME_ROOM") {
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
-          let newRoomState = GameRoomHandler.deleteUserFromGameRoom(message.gameRoomID, message.username);
-          clients.forEach(function(client) {
-            client.send(JSON.stringify({
-              type: "USER_EXIT",
-              gameRoomID: newRoomState.gameRoomID,
-              room: newRoomState
-            }))
-          })
+          if(GameRoomHandler.isAdmin(message.gameRoomID, message.username)) {
+            GameRoomHandler.getRoom(message.gameRoomID).users.forEach(function (user) {
+
+                console.log(user);
+                user.connection.send(JSON.stringify({
+                    type: "GAME_ROOM_CLOSED",
+                }))
+            });
+            GameRoomHandler.deleteRoom(message.gameRoomID);
+          } else
+            {
+              console.log("BİRİ ÇIKTI AMA ADMİN DEĞİL LA");
+                let newRoomState = GameRoomHandler.deleteUserFromGameRoom(message.gameRoomID, message.username);
+                clients.forEach(function (client) {
+                    client.send(JSON.stringify({
+                        type: "USER_EXIT",
+                        gameRoomID: newRoomState.gameRoomID,
+                        room: newRoomState
+                    }))
+                })
+            }
         } else if (message.type === "SET_READY_TRUE") {
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
@@ -201,7 +223,12 @@ module.exports = {
               gameRoomID: newState.gameRoomID,
               state: newState
             }))
-        } else {
+        }
+        else if (message.type === "WAIT_USER"){
+           if(message.isWaiting === true)
+             console.log("anan")
+        }
+        else {
           console.warn("Message did not recognized!")
         }
       });
@@ -215,8 +242,51 @@ module.exports = {
         console.log((new Date()) + " Peer " +
           connection.remoteAddress + " disconnected.");
         clients.splice(index, 1);
-        if (this.connectionLost)
-          this.connectionLost(index);
+
+        GameRoomHandler.Rooms.roomList.forEach(function (room) {
+            room.users.forEach(function (user) {
+                if(user.connection === connection){
+                  if(room.active){
+                    if (user.isAdmin){
+                        room.users.forEach(function (user) {
+                            user.connection.send(JSON.stringify({
+                                type: "USER_DISCONNECTED_GAME",
+                                username: user.username,
+                                isDecided: 1
+                            }))
+                        })
+                    } else
+                      {
+                          room.users.forEach(function (user) {
+                              user.connection.send(JSON.stringify({
+                                  type: "USER_DISCONNECTED_GAME",
+                                  username: user.username,
+                                  isDecided: 0
+                              }))
+                          })
+                      }
+                  } else {
+                      if (user.isAdmin){
+                          GameRoomHandler.deleteRoom(room.gameRoomID);
+                          room.users.forEach(function (user) {
+                              user.connection.send(JSON.stringify({
+                                  type: "GAME_ROOM_CLOSED",
+                              }))
+                          })
+                      }else {
+                          let newRoomState = GameRoomHandler.deleteUserFromGameRoom(room.gameRoomID, user.username);
+                          room.users.forEach(function (user) {
+                              user.connection.send(JSON.stringify({
+                                  type: "USER_JOINED",
+                                  room: newRoomState
+                              }))
+                          })
+                      }
+                  }
+                }
+            })
+        })
+
 
       }.bind(this));
 
