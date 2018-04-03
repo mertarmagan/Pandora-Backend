@@ -10,35 +10,40 @@ module.exports['GameRoomHandler'] = function() {
 
 
   function synchronize() {
-    /*
-    let saveRooms = roomList.slice();
-    saveRooms.forEach(function (room) {
-        room.users.forEach(function (user) {
-            delete user.connection;
-        })
+    let saveRooms = roomList.map(function (room) {
+        return copyRoomWithoutConnections(room)
     });
     let saveRooms2 = {
         roomList: saveRooms,
         size: saveRooms.length
     };
     fs.writeFileSync('./game_rooms/rooms.json', JSON.stringify(saveRooms2, null, 2));
-    */
   }
 
   function generateGRID() {
     return uuidv4();
   }
 
+    function copyRoomWithoutConnections(room) {
+        let saveRoom = {};
+        saveRoom['gameID'] = room['gameID'];
+        saveRoom['gameRoomID'] = room['gameRoomID'];
+        saveRoom['users'] = room['users'];
+        saveRoom['active'] = room['active'];
+        saveRoom['status'] = room['status'];
+        return saveRoom
+    }
+
   return {
     "Rooms": Rooms,
       "RoomStatuses": [],
     "createRoom": function(gameID) {
-      console.log(Rooms);
       let roomObj = {};
 
       roomObj['gameID'] = gameID;
       roomObj['gameRoomID'] = generateGRID();
       roomObj['users'] = [];
+      roomObj['usersWithConnections'] = [];
       roomObj['active'] = false;
       roomObj['status'] = "init";
 
@@ -72,9 +77,12 @@ module.exports['GameRoomHandler'] = function() {
       Rooms.roomList = Rooms.roomList.filter(function(room) {
         return room.gameRoomID !== gameRoomID
       });
+      let rooms = Rooms.roomList.map(function (room) {
+          return copyRoomWithoutConnections(room)
+      });
       Rooms.size -= 1;
       synchronize();
-      return Rooms.roomList;
+      return rooms;
     },
     "deleteAllRooms": function() {
       Rooms.roomList = [];
@@ -101,10 +109,13 @@ module.exports['GameRoomHandler'] = function() {
       Rooms.roomList.forEach(function(room) {
         if (room['gameRoomID'] === gameRoomID) {
           if (!isExist) {
-            console.log("user added");
             if(room.users.length === 0){
-                console.log("connection check", connection);
                 room.users.push({
+                    username: username.toUpperCase(),
+                    ready: false,
+                    isAdmin: true
+                });
+                room.usersWithConnections.push({
                     username: username.toUpperCase(),
                     ready: false,
                     connection: connection,
@@ -112,8 +123,11 @@ module.exports['GameRoomHandler'] = function() {
                 });
                 thisRoom = room;
             } else {
-                console.log("connection check", connection);
                 room.users.push({
+                    username: username.toUpperCase(),
+                    ready: false
+                });
+                room.usersWithConnections.push({
                     username: username.toUpperCase(),
                     ready: false,
                     connection: connection
@@ -126,9 +140,7 @@ module.exports['GameRoomHandler'] = function() {
         }
       }, thisRoom);
       synchronize();
-      console.log("room state felan");
-      console.log(thisRoom);
-      return thisRoom;
+      return copyRoomWithoutConnections(thisRoom)
     },
     "deleteUserFromGameRoom": function(gameRoomID, username) {
       let thisRoom = {};
@@ -140,8 +152,7 @@ module.exports['GameRoomHandler'] = function() {
           thisRoom = room;
         }
       }, thisRoom);
-      synchronize();
-      return thisRoom;
+      synchronize();return copyRoomWithoutConnections(thisRoom)
     },
     "startGame": function(gameRoomID) {
       let thisRoom = {};
@@ -152,9 +163,8 @@ module.exports['GameRoomHandler'] = function() {
           thisRoom = room;
         }
       }, thisRoom);
-      console.log("Backend on its track.. ", thisRoom);
       synchronize();
-      return thisRoom;
+      return copyRoomWithoutConnections(thisRoom)
     },
     "isGameRoomActive": function(gameRoomID) {
       for (let i = 0; i < size; i++) {
@@ -189,29 +199,36 @@ module.exports['GameRoomHandler'] = function() {
         }
       }
       synchronize();
-      return thisRoom;
+      return copyRoomWithoutConnections(thisRoom)
     },
     "getActiveRooms": function() {
       let activeGameRooms = [];
       for (let i = 0; i < Rooms.size; i++)
-        if (Rooms.roomList[i].active === true)
-          activeGameRooms.push(Rooms.roomList[i]);
+        if (Rooms.roomList[i].active === true) {
+            let activeGameRoom = copyRoomWithoutConnections(Rooms.roomList[i]);
+            activeGameRooms.push(activeGameRoom);
+        }
       return activeGameRooms;
     },
     "getAllRooms": function() {
-      return Rooms.roomList;
+        let allRooms = Rooms.roomList.map(function (room) {
+            let retRoom = copyRoomWithoutConnections(room);
+            return retRoom
+        });
+      return allRooms;
     },
     "getRoom": function (gameRoomID) {
-          return Rooms.roomList.find(function (room) {
+          let foundRoom = Rooms.roomList.find(function (room) {
               return room.gameRoomID === gameRoomID
-          })
+          });
+        return copyRoomWithoutConnections(foundRoom)
     },
     "getRoomConnections": function (gameRoomID) {
-        return Rooms.roomList.map(function (room) {
-            return room.users.map(function (user) {
-                return user.connection
-            })
-        })
+        let foundRoom = Rooms.roomList.find(function (room) {
+            return room.gameRoomID === gameRoomID
+        });
+        return foundRoom['usersWithConnections']
+
     },
     "wasPlaying": function(username) {
       for (let i = 0; i < Rooms.size; i++)
@@ -224,38 +241,19 @@ module.exports['GameRoomHandler'] = function() {
         var flag = false;
         Rooms.roomList.forEach(function (room) {
             if(room.gameRoomID === gameRoomID) {
-              console.log("room bulduk admine bakacaz");
+
               room.users.forEach(function (user) {
-                console.log(user);
-                console.log(username);
                 if(user.username.toUpperCase() === username.toUpperCase()) {
                     if (user.isAdmin) {
-                        console.log("admini bulduk oyna devam");
                         flag = true
                     }
                     else {
-                      console.log("patladık" , user);
                     }
                 }
               }.bind(this))
             }
         }.bind(this));
-
-        console.log("flag", flag);
         return flag;
-
     },
-    "notifyRoom": function (gameRoomID, messageType, payloadName, paylaod) {
-        Rooms.roomList.forEach(function (room) {
-            if(room.gameRoomID === gameRoomID){
-              room.users.forEach(function (user) {
-                  user.connection.send(JSON.stringify({
-                      type: messageType,
-
-                  }))
-              })
-            }
-        })
-    }
   }
 }();

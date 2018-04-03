@@ -155,8 +155,7 @@ module.exports = {
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
           if(GameRoomHandler.isAdmin(message.gameRoomID, message.username)) {
-            GameRoomHandler.getRoom(message.gameRoomID).users.forEach(function (user) {
-
+              GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
                 console.log(user);
                 user.connection.send(JSON.stringify({
                     type: "GAME_ROOM_CLOSED",
@@ -244,11 +243,11 @@ module.exports = {
         clients.splice(index, 1);
 
         GameRoomHandler.Rooms.roomList.forEach(function (room) {
-            room.users.forEach(function (user) {
+            GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                 if(user.connection === connection){
                   if(room.active){
                     if (user.isAdmin){
-                        room.users.forEach(function (user) {
+                        GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                             user.connection.send(JSON.stringify({
                                 type: "USER_DISCONNECTED_GAME",
                                 username: user.username,
@@ -257,7 +256,7 @@ module.exports = {
                         })
                     } else
                       {
-                          room.users.forEach(function (user) {
+                          GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                               user.connection.send(JSON.stringify({
                                   type: "USER_DISCONNECTED_GAME",
                                   username: user.username,
@@ -268,14 +267,14 @@ module.exports = {
                   } else {
                       if (user.isAdmin){
                           GameRoomHandler.deleteRoom(room.gameRoomID);
-                          room.users.forEach(function (user) {
+                          GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                               user.connection.send(JSON.stringify({
                                   type: "GAME_ROOM_CLOSED",
                               }))
                           })
                       }else {
                           let newRoomState = GameRoomHandler.deleteUserFromGameRoom(room.gameRoomID, user.username);
-                          room.users.forEach(function (user) {
+                          GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                               user.connection.send(JSON.stringify({
                                   type: "USER_JOINED",
                                   room: newRoomState
