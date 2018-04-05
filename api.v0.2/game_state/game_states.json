@@ -1,2 +1,145 @@
 [
+  {
+    "gameRoomID": "ac7f5c8a-8917-4769-aacd-a5bfc7480de0",
+    "state": {
+      "ID": "ac7f5c8a-8917-4769-aacd-a5bfc7480de0",
+      "cells": [
+        [
+          -1,
+          0,
+          1
+        ],
+        [
+          -1,
+          0,
+          1
+        ],
+        [
+          -1,
+          0,
+          -1
+        ]
+      ],
+      "turn": 1,
+      "moveCount": 5,
+      "winlose": {
+        "playerone": {
+          "win": 0,
+          "lose": 0
+        },
+        "playertwo": {
+          "win": 0,
+          "lose": 0
+        }
+      },
+      "users": [
+        {
+          "username": "EGE",
+          "ready": true,
+          "isAdmin": true
+        },
+        {
+          "username": "BBB",
+          "ready": true
+        }
+      ]
+    }
+  },
+  {
+    "gameRoomID": "b200abe7-4946-4ddb-90d2-5e009b517c82",
+    "state": {
+      "ID": "b200abe7-4946-4ddb-90d2-5e009b517c82",
+      "asking": 1,
+      "answering": 0,
+      "answered": -1,
+      "users": [
+        {
+          "username": "HOPPALAISMET",
+          "ready": true,
+          "isAdmin": true
+        },
+        {
+          "username": "S2C",
+          "ready": true
+        }
+      ]
+    }
+  },
+  {
+    "gameRoomID": "5c42b0d2-95d3-4514-b748-055db5fd300e",
+    "state": {
+      "ID": "5c42b0d2-95d3-4514-b748-055db5fd300e",
+      "playerRoles": [
+        "KING",
+        "WEREWOLF2",
+        "WEREWOLF",
+        "VILLAGER",
+        "VILLAGER2"
+      ],
+      "gameStarted": true,
+      "isNight": false,
+      "isReallyStarted": true,
+      "playerStartOrder": [
+        1
+      ],
+      "playerAffirmation": [
+        0
+      ],
+      "deadPlayerIDs": [
+        0
+      ],
+      "werewolvesClicked": [],
+      "sleepers": [],
+      "selectedUser": -1,
+      "decideMoment": true,
+      "alivePlayers": [
+        1
+      ],
+      "users": [
+        {
+          "username": "EGEBEY",
+          "ready": true,
+          "isAdmin": true
+        },
+        {
+          "username": "S2CI",
+          "ready": true
+        }
+      ]
+    }
+  },
+  {
+    "gameRoomID": "8b4f8ba5-7177-4e7b-a579-b1b41d78748e",
+    "state": {
+      "ID": "8b4f8ba5-7177-4e7b-a579-b1b41d78748e",
+      "playerRoles": [],
+      "gameStarted": false,
+      "isNight": false,
+      "isReallyStarted": false,
+      "playerStartOrder": [
+        0
+      ],
+      "playerAffirmation": [],
+      "deadPlayerIDs": [],
+      "werewolvesClicked": [],
+      "sleepers": [],
+      "selectedUser": 0,
+      "decideMoment": true,
+      "alivePlayers": [
+        0,
+        1
+      ],
+      "users": [
+        {
+          "username": "EGEG",
+          "ready": true,
+          "isAdmin": true
+        },
+        {
+          "username": "GB",
+          "ready": true
+        }
+      ]
+    }
+  }
 ]

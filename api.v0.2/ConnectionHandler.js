@@ -49,7 +49,15 @@ module.exports = {
               type: "ERROR",
               message: "Wrong Password"
             }));
-        } else if (message.type === "CREATE_GAME_ROOM") {
+        }
+        else if (message.type === "VALIDATE_KEY"){
+          let isValid = LoginHandler.validateKey(message.key);
+            connection.send(JSON.stringify({
+                type: "VALIDATE_KEY",
+                isValid: isValid
+            }))
+        }
+        else if (message.type === "CREATE_GAME_ROOM") {
           console.assert(message.key !== null);
           console.assert(message.gameID !== null);
           if (LoginHandler.validateKey(message.key)) {
@@ -155,6 +163,7 @@ module.exports = {
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
           if(GameRoomHandler.isAdmin(message.gameRoomID, message.username)) {
+              console.log("BİRİ ÇIKTI VE ADMİN LA");
               GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
                 console.log(user);
                 user.connection.send(JSON.stringify({
@@ -165,13 +174,20 @@ module.exports = {
           } else
             {
               console.log("BİRİ ÇIKTI AMA ADMİN DEĞİL LA");
+              let connections = GameRoomHandler.getRoomConnections(message.gameRoomID);
                 let newRoomState = GameRoomHandler.deleteUserFromGameRoom(message.gameRoomID, message.username);
-                clients.forEach(function (client) {
-                    client.send(JSON.stringify({
-                        type: "USER_EXIT",
-                        gameRoomID: newRoomState.gameRoomID,
-                        room: newRoomState
+                connections.forEach(function (client) {
+                  if(client.connection !== connection) {
+                      client.connection.send(JSON.stringify({
+                          type: "USER_EXIT",
+                          gameRoomID: newRoomState.gameRoomID,
+                          room: newRoomState
+                      }))
+                  }else {
+                    client.connection.send(JSON.stringify({
+                        type: "ME_EXIT"
                     }))
+                  }
                 })
             }
         } else if (message.type === "SET_READY_TRUE") {
@@ -206,12 +222,15 @@ module.exports = {
           console.assert(message.gameRoomID !== null);
           let newState = GameStateHandler.updateGameState(message.gameRoomID, message.state);
           clients.forEach(function(client) {
-            if (connection !== client)
-              client.send(JSON.stringify({
-                type: "STATE_UPDATE",
-                gameRoomID: newState.gameRoomID,
-                state: newState
-              }))
+            if (connection !== client) {
+                console.log("state dağıtıyom xd " , client.username);
+                console.log(newState);
+                client.send(JSON.stringify({
+                    type: "STATE_UPDATE",
+                    gameRoomID: newState.gameRoomID,
+                    state: newState
+                }))
+            }
           })
         } else if (message.type === "ENTER_GAME") {
           console.assert(message.gameRoomID !== null);
@@ -244,18 +263,20 @@ module.exports = {
 
         GameRoomHandler.Rooms.roomList.forEach(function (room) {
             GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
-                if(user.connection === connection){
+                if(user.connection.state === "closed"){
                   if(room.active){
                     if (user.isAdmin){
+                      console.log("admin düşmüş la , oyun da aktifmiş");
                         GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                             user.connection.send(JSON.stringify({
                                 type: "USER_DISCONNECTED_GAME",
                                 username: user.username,
                                 isDecided: 1
                             }))
-                        })
+                        });
                     } else
                       {
+                          console.log("user düşmüş la, oyun da aktifmiş");
                           GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                               user.connection.send(JSON.stringify({
                                   type: "USER_DISCONNECTED_GAME",
@@ -266,6 +287,7 @@ module.exports = {
                       }
                   } else {
                       if (user.isAdmin){
+                          console.log("admin düşmüş la, oyun da aktif değilmiş");
                           GameRoomHandler.deleteRoom(room.gameRoomID);
                           GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                               user.connection.send(JSON.stringify({
@@ -273,6 +295,7 @@ module.exports = {
                               }))
                           })
                       }else {
+                          console.log("user düşmüş la, oyun da aktif değilmiş");
                           let newRoomState = GameRoomHandler.deleteUserFromGameRoom(room.gameRoomID, user.username);
                           GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                               user.connection.send(JSON.stringify({

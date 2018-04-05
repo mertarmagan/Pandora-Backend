@@ -4,19 +4,18 @@ const uuidv4 = require('uuid/v4');
 module.exports['GameRoomHandler'] = function() {
   let roomData = fs.readFileSync('./game_rooms/rooms.json');
   let Rooms = JSON.parse(roomData);
-  // let LoginHandler = require("./../LoginHandler").LoginHandler;
-  let roomList = Rooms.roomList ? Rooms.roomList : [];
   let size = Rooms.roomList ? Rooms.roomList.length : 0;
 
 
   function synchronize() {
-    let saveRooms = roomList.map(function (room) {
+    let saveRooms = Rooms.roomList.map(function (room) {
         return copyRoomWithoutConnections(room)
     });
     let saveRooms2 = {
         roomList: saveRooms,
         size: saveRooms.length
     };
+    console.log("saving rooms: " , saveRooms2);
     fs.writeFileSync('./game_rooms/rooms.json', JSON.stringify(saveRooms2, null, 2));
   }
 
@@ -81,6 +80,7 @@ module.exports['GameRoomHandler'] = function() {
           return copyRoomWithoutConnections(room)
       });
       Rooms.size -= 1;
+      console.log("odayı sildik mi beyler, ", Rooms.roomList);
       synchronize();
       return rooms;
     },
@@ -92,9 +92,9 @@ module.exports['GameRoomHandler'] = function() {
     },
     "duplicateUser": function(username, gameRoomID) {
       for (let i = 0; i < Rooms.size; i++) {
-        if (roomList[i].gameRoomID === gameRoomID) {
-          for (let j = 0; j < roomList[i].users.length; j++) {
-            if (roomList[i].users[j].username === username.toUpperCase()) {
+        if (Rooms.roomList[i].gameRoomID === gameRoomID) {
+          for (let j = 0; j < Rooms.roomList[i].users.length; j++) {
+            if (Rooms.roomList[i].users[j].username === username.toUpperCase()) {
               return true;
             }
           }
@@ -169,7 +169,7 @@ module.exports['GameRoomHandler'] = function() {
     "isGameRoomActive": function(gameRoomID) {
       for (let i = 0; i < size; i++) {
         if (Rooms.roomList[i].gameRoomID === gameRoomID) {
-          return roomList[i].active;
+          return Rooms.roomList[i].active;
         }
       }
     },
