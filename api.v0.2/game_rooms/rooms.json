@@ -1,8 +1,8 @@
 {
   "roomList": [
     {
-      "gameID": "985ebfa1-33f3-48fa-87cc-9e5a1170b014",
-      "gameRoomID": "4ae7e564-5622-412c-b19a-0cd35b0df5c1",
+      "gameID": "6c0e76d5-2fa2-46d0-9047-9526fe5855d9",
+      "gameRoomID": "e3915b7f-0b21-4d0f-9fe4-71ddc6a9326e",
       "users": [
         {
           "username": "EGE",
@@ -11,6 +11,10 @@
         },
         {
           "username": "EGE2",
+          "ready": true
+        },
+        {
+          "username": "EGE3",
           "ready": true
         }
       ],

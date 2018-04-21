@@ -297,7 +297,8 @@ module.exports = {
                           }
                           else {
                               console.log("waiting policy yok");
-                              if (GameRoomHandler.getRoom(room.gameRoomID)['WaitingUsers'] === null) {
+                              console.log("waiting users ne alemde? ", GameRoomHandler.getRoom(room.gameRoomID)['WaitingUsers']);
+                              if (!GameRoomHandler.getRoom(room.gameRoomID)['WaitingUsers']) {
                                   GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                                       user.connection.send(JSON.stringify({
                                           type: "USER_DISCONNECTED_GAME",
@@ -305,6 +306,8 @@ module.exports = {
                                           isDecided: 0
                                       }))
                                   })
+                              }else {
+                                  console.log("user düştü ama düşen ilk user bu değil")
                               }
                           }
                           GameRoomHandler.addWaitingUser(room.gameRoomID, user.username)

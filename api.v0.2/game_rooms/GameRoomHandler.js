@@ -242,14 +242,16 @@ module.exports['GameRoomHandler'] = function() {
           if(room.gameRoomID === gameRoomID){
               room['waitingPolicy'] = decision
           }
-      })
+      });
+        synchronize()
     },
     "addWaitingUser": function (gameRoomID, username) {
       Rooms.roomList.forEach(function (room) {
           if(room.gameRoomID === gameRoomID) {
-              room['WaitingUsers'] ? room['WaitingUsers'].append(username): room['WaitingUsers'] = [username]
+              room['WaitingUsers'] ? room['WaitingUsers'].push(username): room['WaitingUsers'] = [username]
           }
-      })
+      });
+        synchronize()
     },
       "deleteWaitingUser": function (gameRoomID, delete_username) {
           Rooms.roomList.forEach(function (room) {
@@ -268,6 +270,7 @@ module.exports['GameRoomHandler'] = function() {
               }
 
           })
+          synchronize()
       },
     "isAdmin": function (gameRoomID, username) {
         var flag = false;
