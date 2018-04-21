@@ -124,10 +124,11 @@ module.exports = {
           if(GameRoomHandler.isGameRoomActive(message.gameRoomID)) {
             if(GameRoomHandler.deleteWaitingUser(message.username)){
                 GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+                    clearInterval(this.timerID);
                     user.connection.send(JSON.stringify({
-
+                        type: "CONTINUE_GAME"
                     }))
-                })
+                }.bind(this))
             }
           }else {
               let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username , connection);
