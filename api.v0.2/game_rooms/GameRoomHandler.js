@@ -237,6 +237,38 @@ module.exports['GameRoomHandler'] = function() {
             return true;
       return false;
     },
+    "setWaitingPolicy": function (gameRoomID, decision) {
+      Rooms.roomList.forEach(function (room) {
+          if(room.gameRoomID === gameRoomID){
+              room['waitingPolicy'] = decision
+          }
+      })
+    },
+    "addWaitingUser": function (gameRoomID, username) {
+      Rooms.roomList.forEach(function (room) {
+          if(room.gameRoomID === gameRoomID) {
+              room['WaitingUsers'] ? room['WaitingUsers'].append(username): room['WaitingUsers'] = [username]
+          }
+      })
+    },
+      "deleteWaitingUser": function (gameRoomID, delete_username) {
+          Rooms.roomList.forEach(function (room) {
+              console.log("old waiting users", room['WaitingUsers']);
+              if(room.gameRoomID === gameRoomID) {
+                  room['WaitingUsers'] = room['WaitingUsers'].filter(function (username) {
+                      return username === delete_username
+                  });
+                  console.log("new waiting users", room['WaitingUsers']);
+                  if(room['WaitingUsers'].length === 0){
+                      delete room['WaitingUsers'];
+                      return true
+                  }else {
+                      return false
+                  }
+              }
+
+          })
+      },
     "isAdmin": function (gameRoomID, username) {
         var flag = false;
         Rooms.roomList.forEach(function (room) {
