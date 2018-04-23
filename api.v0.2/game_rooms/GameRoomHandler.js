@@ -167,11 +167,16 @@ module.exports['GameRoomHandler'] = function() {
       return copyRoomWithoutConnections(thisRoom)
     },
     "isGameRoomActive": function(gameRoomID) {
-      for (let i = 0; i < size; i++) {
-        if (Rooms.roomList[i].gameRoomID === gameRoomID) {
-          return Rooms.roomList[i].active;
-        }
-      }
+        let flag = false;
+        if(Rooms.roomList.length === 0)
+            return false;
+        Rooms.roomList.forEach(function (room) {
+            if(room.gameRoomID === gameRoomID){
+                console.log("status buldum: " ,room['status']);
+                flag = (room['status'] === "active")
+            }
+        });
+        return flag;
     },
     "setGameRoomActive": function(gameRoomID, boolean) {
       let success = false;
@@ -254,23 +259,33 @@ module.exports['GameRoomHandler'] = function() {
         synchronize()
     },
       "deleteWaitingUser": function (gameRoomID, delete_username) {
+        let flag = true;
+        console.log("target gameroomID: " , gameRoomID);
           Rooms.roomList.forEach(function (room) {
+              console.log("current gameRoomID: " , room.gameRoomID);
+              console.log("target in foreach gameRoomID: " , gameRoomID);
               console.log("old waiting users", room['WaitingUsers']);
               if(room.gameRoomID === gameRoomID) {
                   room['WaitingUsers'] = room['WaitingUsers'].filter(function (username) {
-                      return username === delete_username
+                      return username.toLowerCase() !== delete_username.toLowerCase()
                   });
                   console.log("new waiting users", room['WaitingUsers']);
-                  if(room['WaitingUsers'].length === 0){
+                  console.log("new waiting users length", room['WaitingUsers'].length);
+                  if(room['WaitingUsers'].length == 0){
+                      console.log("bekleyen kalmadı siliyom aq");
                       delete room['WaitingUsers'];
+                      flag = true;
                       return true
                   }else {
-                      return false
+                      console.log("bekleyen var silmiyom aq");
+                      flag = false;
+                      return false;
                   }
               }
 
-          })
-          synchronize()
+          });
+          synchronize();
+          return flag
       },
     "isAdmin": function (gameRoomID, username) {
         var flag = false;

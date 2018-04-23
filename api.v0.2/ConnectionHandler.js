@@ -1,5 +1,5 @@
+let timerID;
 module.exports = {
-    "timerID": null,
   "ConnectionHandler": function() {
     var webSocketServerPort = 1337;
     var webSocketServer = require('websocket').server;
@@ -120,42 +120,71 @@ module.exports = {
         } else if (message.type === "ENTER_GAME_ROOM") {
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
-          console.log("join game request: ", message);
           if(GameRoomHandler.isGameRoomActive(message.gameRoomID)) {
-            if(GameRoomHandler.deleteWaitingUser(message.username)){
+              console.log("tekrar girmeye çalışıyoz");
+            if(GameRoomHandler.deleteWaitingUser(message.gameRoomID,message.username)){
                 GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
-                    clearInterval(this.timerID);
+                    if(user.username.toUpperCase() === message.username.toUpperCase()){
+                        console.log("connectionu updateliyom apla");
+                        user.connection = connection;
+                        console.log("yeni user connection state'i : " ,user.connection.state)
+                    }
+                });
+                console.log("tekrar girmeye çalışan girdi ve başka bekleyen kalmadı");
+                let roomState = GameRoomHandler.getRoom(message.gameRoomID);
+                console.log("old timer id: ",this.timerID);
+                clearTimeout(timerID);
+                console.log("new timer id: ",this.timerID);
+                GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
                     user.connection.send(JSON.stringify({
-                        type: "CONTINUE_GAME"
+                        type: "CONTINUE_GAME",
+                        room: roomState
+                    }))
+                }.bind(this));
+                GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+                    user.connection.send(JSON.stringify({
+                        type: "STATE_UPDATE",
+                        state: GameStateHandler.getGameState(message.gameRoomID)
                     }))
                 }.bind(this))
+            }else {
+                /*
+                console.log("tekrar girmeye çalışan girdi ama başka beklenilenler var");
+                let newRoomState = GameRoomHandler.getRoom(message.gameRoomID);
+                connection.send(JSON.stringify({
+                    type: "START_GAME",
+                    room: newRoomState
+                }));*/
             }
-          }else {
+          } else {
               let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username , connection);
-              console.log(clients.length);
-              clients.forEach(function(client) {
-                  if (client !== connection)
-                      client.send(JSON.stringify({
-                          type: "USER_JOINED",
-                          room: newRoomState
-                      }))
-              });
-              connection.send(JSON.stringify({
-                  type: "ENTER_GAME_ROOM",
-                  room: newRoomState
-              }));
+              console.log("adam eklemeye çalışıyorum: " , newRoomState);
+              if(newRoomState.gameRoomID !== undefined) {
+                  GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+                      console.log("user " + user.username + "'e user girdiğini bildiriyorum :)");
+                      if (user.connection != connection) {
+                          user.connection.send(JSON.stringify({
+                              type: "USER_JOINED",
+                              room: newRoomState
+                          }))
+                      }
+                  });
+                  connection.send(JSON.stringify({
+                      type: "ENTER_GAME_ROOM",
+                      room: newRoomState
+                  }));
+              }
           }
         } else if (message.type === "START_GAME") {
-          console.log("Start game request!");
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
           let newRoomState = GameRoomHandler.startGame(message.gameRoomID);
-          clients.forEach(function(client) {
-            if (client !== connection)
-              client.send(JSON.stringify({
-                type: "START_GAME",
-                room: newRoomState
-              }))
+          GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+              if (user.connection !== connection)
+                      user.connection.send(JSON.stringify({
+                          type: "START_GAME",
+                          room: newRoomState
+                      }))
           });
           connection.send(JSON.stringify({
             type: "START_GAME",
@@ -167,7 +196,6 @@ module.exports = {
           if(GameRoomHandler.isAdmin(message.gameRoomID, message.username)) {
               console.log("BİRİ ÇIKTI VE ADMİN LA");
               GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
-                console.log(user);
                 user.connection.send(JSON.stringify({
                     type: "GAME_ROOM_CLOSED",
                 }))
@@ -196,37 +224,47 @@ module.exports = {
           console.assert(message.gameRoomID !== null);
           console.assert(message.username !== null);
           let newRoomState = GameRoomHandler.setUserReady(message.gameRoomID, message.username, true);
-          clients.forEach(function(client) {
-            client.send(JSON.stringify({
-              type: "USER_READY",
-              room: newRoomState
-            }))
-          }, this)
+          GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+              user.connection.send(JSON.stringify({
+                  type: "USER_READY",
+                  room: newRoomState
+              }))
+          })
         } else if (message.type === "SET_READY_FALSE") {
-          console.assert(message.gameRoomID !== null);
-          console.assert(message.username !== null);
-          let newRoomState = GameRoomHandler.setUserReady(message.gameRoomID, message.username, false);
-          clients.forEach(function(client) {
-            client.send(JSON.stringify({
-              type: "USER_READY",
-              room: newRoomState
-            }))
-          }, this)
+            console.assert(message.gameRoomID !== null);
+            console.assert(message.username !== null);
+            let newRoomState = GameRoomHandler.setUserReady(message.gameRoomID, message.username, false);
+            GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+                user.connection.send(JSON.stringify({
+                    type: "USER_READY",
+                    room: newRoomState
+                }))
+            })
         } else if (message.type === "GET_INITIAL_STATE") {
           console.assert(message.gameRoomID !== null);
-          ws.send(JSON.stringify({
+          newState= GameStateHandler.getGameState(message.gameRoomID);
+          connection.send(JSON.stringify({
             type: "STATE_UPDATE",
-            state: GameStateHandler.getGameState(message.gameRoomID)
+            gameRoomID: newState.gameRoomID,
+            state: newState
           }))
 
         } else if (message.type === "STATE_UPDATE") {
           console.assert(message.state !== null);
           console.assert(message.gameRoomID !== null);
           let newState = GameStateHandler.updateGameState(message.gameRoomID, message.state);
+          GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+              if(connection !== user.connection){
+                  user.connection.send(JSON.stringify({
+                      type: "STATE_UPDATE",
+                      gameRoomID: newState.gameRoomID,
+                      state: newState
+                  }));
+              }
+          });
+          /*
           clients.forEach(function(client) {
             if (connection !== client) {
-                console.log("state dağıtıyom xd " , client.username);
-                console.log(newState);
                 client.send(JSON.stringify({
                     type: "STATE_UPDATE",
                     gameRoomID: newState.gameRoomID,
@@ -234,6 +272,7 @@ module.exports = {
                 }))
             }
           })
+          */
         } else if (message.type === "ENTER_GAME") {
           console.assert(message.gameRoomID !== null);
           var newState = GameStateHandler.getGameState(message.gameRoomID);
@@ -246,12 +285,13 @@ module.exports = {
         }
         else if (message.type === "WAIT_USER"){
             GameRoomHandler.setWaitingPolicy(message.gameRoomID,message.isWaiting);
-            this.timerID = setTimeout(function () {
+            timerID = setTimeout(function () {
                 GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
                     user.connection.send(JSON.stringify({
                         type: "GAME_ROOM_CLOSED"
                     }))
-                })
+                });
+                GameRoomHandler.deleteRoom(message.gameRoomID);
             }.bind(this), 30000)
         }
         else {
@@ -260,7 +300,6 @@ module.exports = {
       });
 
       let index = clients.push(connection) - 1;
-      console.log(clients.length);
       if (this.newConnection)
         this.newConnection(index);
 
