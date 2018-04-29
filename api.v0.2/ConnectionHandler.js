@@ -158,6 +158,9 @@ module.exports = {
             }
           } else {
               let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username , connection);
+              if(newRoomState === null){
+                  return
+              }
               console.log("adam eklemeye çalışıyorum: " , newRoomState);
               if(newRoomState.gameRoomID !== undefined) {
                   GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {

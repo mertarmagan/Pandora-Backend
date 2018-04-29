@@ -91,7 +91,7 @@ module.exports['GameRoomHandler'] = function() {
       return Rooms.roomList;
     },
     "duplicateUser": function(username, gameRoomID) {
-      for (let i = 0; i < Rooms.size; i++) {
+      for (let i = 0; i < Rooms.roomList.length; i++) {
         if (Rooms.roomList[i].gameRoomID === gameRoomID) {
           for (let j = 0; j < Rooms.roomList[i].users.length; j++) {
             if (Rooms.roomList[i].users[j].username === username.toUpperCase()) {
@@ -106,6 +106,9 @@ module.exports['GameRoomHandler'] = function() {
     "addUserToGameRoom": function(gameRoomID, username, connection) {
       let thisRoom = {};
       let isExist = this.duplicateUser(username, gameRoomID);
+      if(isExist){
+          return null
+      }
       Rooms.roomList.forEach(function(room) {
         if (room['gameRoomID'] === gameRoomID) {
           if (!isExist) {
