@@ -186,6 +186,7 @@ module.exports['GameRoomHandler'] = function() {
       let success = false;
       Rooms.roomList.forEach(function(room) {
         if (room['gameRoomID'] === gameRoomID) {
+          room['status'] = boolean ? "active" : "init";
           room['active'] = boolean;
           success = true;
         }
