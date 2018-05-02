@@ -155,7 +155,8 @@ module.exports['GameRoomHandler'] = function() {
           thisRoom = room;
         }
       }, thisRoom);
-      synchronize();return copyRoomWithoutConnections(thisRoom)
+      synchronize();
+      return copyRoomWithoutConnections(thisRoom)
     },
     "startGame": function(gameRoomID) {
       let thisRoom = {};
@@ -208,22 +209,22 @@ module.exports['GameRoomHandler'] = function() {
       }
       synchronize();
       return copyRoomWithoutConnections(thisRoom)
+
     },
     "getActiveRooms": function() {
-      let activeGameRooms = [];
-      for (let i = 0; i < Rooms.size; i++)
-        if (Rooms.roomList[i].active === true) {
-            let activeGameRoom = copyRoomWithoutConnections(Rooms.roomList[i]);
-            activeGameRooms.push(activeGameRoom);
-        }
-      return activeGameRooms;
+        let activeGameRooms = [];
+        for (let i = 0; i < Rooms.roomList.length; i++)
+            if (Rooms.roomList[i].active === true) {
+                let activeGameRoom = copyRoomWithoutConnections(Rooms.roomList[i]);
+                activeGameRooms.push(activeGameRoom);
+            }
+
+        return activeGameRooms;
     },
     "getAllRooms": function() {
-        let allRooms = Rooms.roomList.map(function (room) {
-            let retRoom = copyRoomWithoutConnections(room);
-            return retRoom
-        });
-      return allRooms;
+        return Rooms.roomList.map(function (room) {
+          return copyRoomWithoutConnections(room);
+      });
     },
     "getRoom": function (gameRoomID) {
         let foundRoom = Rooms.roomList.find(function (room) {
@@ -242,7 +243,7 @@ module.exports['GameRoomHandler'] = function() {
 
     },
     "wasPlaying": function(username) {
-      for (let i = 0; i < Rooms.size; i++)
+      for (let i = 0; i < Rooms.roomList.length; i++)
         for (let j = 0; j < Rooms.roomList[i].users.length; j++)
           if (Rooms.roomList[i].users[j].username === username.toUpperCase())
             return true;
