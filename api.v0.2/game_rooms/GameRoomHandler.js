@@ -226,16 +226,19 @@ module.exports['GameRoomHandler'] = function() {
       return allRooms;
     },
     "getRoom": function (gameRoomID) {
-          let foundRoom = Rooms.roomList.find(function (room) {
-              return room.gameRoomID === gameRoomID
-          });
+        let foundRoom = Rooms.roomList.find(function (room) {
+          return room.gameRoomID === gameRoomID
+        });
         return copyRoomWithoutConnections(foundRoom)
     },
     "getRoomConnections": function (gameRoomID) {
         let foundRoom = Rooms.roomList.find(function (room) {
             return room.gameRoomID === gameRoomID
         });
-        return foundRoom['usersWithConnections']
+        if(foundRoom)
+            return foundRoom['usersWithConnections'];
+        else
+            return []
 
     },
     "wasPlaying": function(username) {
