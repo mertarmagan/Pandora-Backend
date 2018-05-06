@@ -148,13 +148,19 @@ module.exports = {
                     }))
                 }.bind(this))
             }else {
-                /*
                 console.log("tekrar girmeye çalışan girdi ama başka beklenilenler var");
+                GameRoomHandler.getRoomConnections(message.gameRoomID).forEach(function (user) {
+                    if(user.username.toUpperCase() === message.username.toUpperCase()){
+                        console.log("connectionu updateliyom apla");
+                        user.connection = connection;
+                        console.log("yeni user connection state'i : " ,user.connection.state)
+                    }
+                });
                 let newRoomState = GameRoomHandler.getRoom(message.gameRoomID);
                 connection.send(JSON.stringify({
-                    type: "START_GAME",
+                    type: "CONTINUE_GAME",
                     room: newRoomState
-                }));*/
+                }));
             }
           } else {
               let newRoomState = GameRoomHandler.addUserToGameRoom(message.gameRoomID, message.username , connection);
@@ -334,17 +340,18 @@ module.exports = {
                     } else
                       {
                           console.log("user düşmüş la, oyun da aktifmiş");
+                          GameRoomHandler.addWaitingUser(room.gameRoomID, user.username);
                           if(GameRoomHandler.getRoom(room.gameRoomID)['WaitingPolicy']) {
                               console.log("waiting policy var ve ", GameRoomHandler.getRoom(room.gameRoomID)['WaitingPolicy']);
                           }
                           else {
                               console.log("waiting policy yok");
-                              console.log("waiting users ne alemde? ", GameRoomHandler.getRoom(room.gameRoomID)['WaitingUsers']);
+                              console.log("waiting users ne alemde? ", GameRoomHandler.getWaitingUsers(room.gameRoomID));
                               if (!GameRoomHandler.getRoom(room.gameRoomID)['WaitingUsers']) {
                                   GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
                                       user.connection.send(JSON.stringify({
                                           type: "USER_DISCONNECTED_GAME",
-                                          username: user.username,
+                                          username: GameRoomHandler.getLatestWaitingUser(room.gameRoomID),
                                           isDecided: 0
                                       }))
                                   })
@@ -352,7 +359,6 @@ module.exports = {
                                   console.log("user düştü ama düşen ilk user bu değil")
                               }
                           }
-                          GameRoomHandler.addWaitingUser(room.gameRoomID, user.username)
                       }
                   } else {
                       if (user.isAdmin){

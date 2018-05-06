@@ -15,7 +15,6 @@ module.exports['GameRoomHandler'] = function() {
         roomList: saveRooms,
         size: saveRooms.length
     };
-    console.log("saving rooms: " , saveRooms2);
     fs.writeFileSync('./game_rooms/rooms.json', JSON.stringify(saveRooms2, null, 2));
   }
 
@@ -53,7 +52,7 @@ module.exports['GameRoomHandler'] = function() {
     },
     "setRoomWaiting": function (gameRoomID) {
         Rooms.roomList.forEach(function (gameRoom) {
-            if(gameRoom.gameRoomID == gameRoomID){
+            if(gameRoom.gameRoomID === gameRoomID){
               gameRoom.status = "waiting"
             }
         });
@@ -233,6 +232,16 @@ module.exports['GameRoomHandler'] = function() {
         });
         return copyRoomWithoutConnections(foundRoom)
     },
+      "getWaitingUsers": function (gameRoomID) {
+          let foundRoom = Rooms.roomList.find(function (room) {
+              return room.gameRoomID === gameRoomID;
+          });
+          if(foundRoom && foundRoom['WaitingUsers'].length > 0){
+              return foundRoom['WaitingUsers']
+          }else{
+              return []
+          }
+      },
     "getRoomConnections": function (gameRoomID) {
         let foundRoom = Rooms.roomList.find(function (room) {
             return room.gameRoomID === gameRoomID
@@ -261,11 +270,23 @@ module.exports['GameRoomHandler'] = function() {
     "addWaitingUser": function (gameRoomID, username) {
       Rooms.roomList.forEach(function (room) {
           if(room.gameRoomID === gameRoomID) {
-              room['WaitingUsers'] ? room['WaitingUsers'].push(username): room['WaitingUsers'] = [username]
+              if(room['WaitingUsers'] === undefined || room['WaitingUsers'].indexOf(username) === -1)
+                room['WaitingUsers'] ? room['WaitingUsers'].push(username): room['WaitingUsers'] = [username]
           }
       });
         synchronize()
     },
+      "getLatestWaitingUser": function (gameRoomID) {
+            let foundUser = null;
+          Rooms.roomList.forEach(function (room) {
+              if(room.gameRoomID === gameRoomID){
+                  if(room['WaitingUsers'].length > 0)
+                    foundUser = room['WaitingUsers'][0]
+              }
+          });
+          if(foundUser)
+              return foundUser
+      },
       "deleteWaitingUser": function (gameRoomID, delete_username) {
         let flag = true;
         console.log("target gameroomID: " , gameRoomID);
@@ -274,12 +295,13 @@ module.exports['GameRoomHandler'] = function() {
               console.log("target in foreach gameRoomID: " , gameRoomID);
               console.log("old waiting users", room['WaitingUsers']);
               if(room.gameRoomID === gameRoomID) {
-                  room['WaitingUsers'] = room['WaitingUsers'].filter(function (username) {
-                      return username.toLowerCase() !== delete_username.toLowerCase()
-                  });
+                  if(room['WaitingUsers'] && room['WaitingUsers'].length > 0)
+                      room['WaitingUsers'] = room['WaitingUsers'].filter(function (username) {
+                          return username.toLowerCase() !== delete_username.toLowerCase()
+                      });
                   console.log("new waiting users", room['WaitingUsers']);
                   console.log("new waiting users length", room['WaitingUsers'].length);
-                  if(room['WaitingUsers'].length == 0){
+                  if(room['WaitingUsers'].length === 0){
                       console.log("bekleyen kalmadı siliyom aq");
                       delete room['WaitingUsers'];
                       flag = true;
