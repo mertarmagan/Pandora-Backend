@@ -3,9 +3,7 @@ const uuidv4 = require('uuid/v4');
 
 module.exports['GameRoomHandler'] = function() {
   let roomData = fs.readFileSync('./game_rooms/rooms.json');
-  let Rooms = JSON.parse(roomData);
-  let size = Rooms.roomList ? Rooms.roomList.length : 0;
-
+  let Rooms = {roomList: [], size: 0};
 
   function synchronize() {
     let saveRooms = Rooms.roomList.map(function (room) {
@@ -24,11 +22,13 @@ module.exports['GameRoomHandler'] = function() {
 
     function copyRoomWithoutConnections(room) {
         let saveRoom = {};
-        saveRoom['gameID'] = room['gameID'];
-        saveRoom['gameRoomID'] = room['gameRoomID'];
-        saveRoom['users'] = room['users'];
-        saveRoom['active'] = room['active'];
-        saveRoom['status'] = room['status'];
+        if(room && room['gameID'] !== undefined) {
+            saveRoom['gameID'] = room['gameID'];
+            saveRoom['gameRoomID'] = room['gameRoomID'];
+            saveRoom['users'] = room['users'];
+            saveRoom['active'] = room['active'];
+            saveRoom['status'] = room['status'];
+        }
         return saveRoom
     }
 
@@ -230,7 +230,10 @@ module.exports['GameRoomHandler'] = function() {
         let foundRoom = Rooms.roomList.find(function (room) {
           return room.gameRoomID === gameRoomID
         });
-        return copyRoomWithoutConnections(foundRoom)
+        if(foundRoom)
+            return copyRoomWithoutConnections(foundRoom);
+        else
+            return {}
     },
       "getWaitingUsers": function (gameRoomID) {
           let foundRoom = Rooms.roomList.find(function (room) {
@@ -300,7 +303,6 @@ module.exports['GameRoomHandler'] = function() {
                           return username.toLowerCase() !== delete_username.toLowerCase()
                       });
                   console.log("new waiting users", room['WaitingUsers']);
-                  console.log("new waiting users length", room['WaitingUsers'].length);
                   if(room['WaitingUsers'].length === 0){
                       console.log("bekleyen kalmadı siliyom aq");
                       delete room['WaitingUsers'];

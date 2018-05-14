@@ -323,7 +323,9 @@ module.exports = {
                   if(room.active){
                     if (user.isAdmin){
                       console.log("admin düşmüş la , oyun da aktifmiş");
-                        GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
+                        let connections = GameRoomHandler.getRoomConnections(room.gameRoomID);
+                        GameRoomHandler.deleteRoom(room.gameRoomID);
+                        connections.forEach(function (user){
                             user.connection.send(JSON.stringify({
                                 type: "USER_DISCONNECTED_GAME",
                                 username: user.username,
@@ -331,7 +333,7 @@ module.exports = {
                             }))
                         });
                         setTimeout(function () {
-                            GameRoomHandler.getRoomConnections(room.gameRoomID).forEach(function (user) {
+                            connections.forEach(function (user) {
                                 user.connection.send(JSON.stringify({
                                     type: "GAME_ROOM_CLOSED"
                                 }))
